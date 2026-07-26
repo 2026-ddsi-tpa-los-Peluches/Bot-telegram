@@ -2,19 +2,20 @@ package ar.edu.utn.dds.k3003.componentes;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.beans.factory.annotation.Value;
+
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class IncentivosClient {
+public class TelegramClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String baseUrl;
 
-    public IncentivosClient(@Value("${INCENTIVOS_SERVICE_URL:http://localhost:8081}") String baseUrl) {
+    public TelegramClient(@Value("${INCENTIVOS_SERVICE_URL:http://localhost:8081}") String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
