@@ -60,8 +60,24 @@ public class Fachada {
   // Módulo Entidades Benéficas
   // =========================================================================
 
-  public String editarEntidad(Integer id, String nuevoNombre) {
-    return "✏️ Entidad ID " + id + " actualizada a '" + nuevoNombre + "'.";
+  public String editarEntidad(Integer id, String razonSocial, String domicilio, String telefono, String correo) {
+    try {
+      EntidadBeneficaDTO dto = new EntidadBeneficaDTO(id, razonSocial, domicilio, telefono, correo);
+      EntidadBeneficaDTO editada = this.donadoresYEntidadesClient.editarEntidad(id, dto);
+
+      if (editada == null) {
+        return "❌ *Error:* No existe ninguna entidad con el ID *" + id + "*.";
+      }
+
+      return "✏️ *Entidad Actualizada con Éxito*\n\n" +
+              "🏢 *ID:* `" + editada.id() + "`\n" +
+              "📛 *Razón Social:* " + editada.razonSocial() + "\n" +
+              "📍 *Domicilio:* " + editada.domicilio() + "\n" +
+              "📞 *Teléfono:* " + editada.telefono() + "\n" +
+              "✉️ *Correo:* " + editada.correo();
+    } catch (Exception e) {
+      return "❌ *Error:* No existe ninguna entidad registrada con el ID *" + id + "*.";
+    }
   }
 
   public String crearEntidad(String razonSocial, String domicilio, String telefono, String correo) {
@@ -105,31 +121,38 @@ public class Fachada {
       return "📭 No hay entidades registradas en el sistema.";
     }
 
-    StringBuilder sb = new StringBuilder("📋 *Lista de Entidades Benéficas:*\n\n");
+    StringBuilder sb = new StringBuilder("📋 *Lista de Entidades Benéficas (Total: " + entidades.size() + ")*\n");
+    sb.append("─────────────────────────\n\n");
+
     for (EntidadBeneficaDTO ent : entidades) {
-      sb.append("• *ID:* ").append(ent.id())
-              .append(" | *Razón Social:* ").append(ent.razonSocial())
-              .append("\n");
+      String domicilio = ent.domicilio() != null ? ent.domicilio() : "No especificado";
+      String telefono = ent.telefono() != null ? ent.telefono() : "No especificado";
+      String correo = ent.correo() != null ? ent.correo() : "No especificado";
+
+      sb.append("🏢 *").append(ent.razonSocial()).append("* (ID: `").append(ent.id()).append("`)\n")
+              .append("📍 *Domicilio:* ").append(domicilio).append("\n")
+              .append("📞 *Teléfono:* ").append(telefono).append("\n")
+              .append("✉️ *Correo:* ").append(correo).append("\n\n")
+              .append("─────────────────────────\n\n");
     }
 
-    return sb.toString();
+    return sb.toString().trim();
   }
 
   // =========================================================================
   // Módulo Necesidades
   // =========================================================================
 
-  // --- Métodos consumidos por TelegramBotComponent ---
-
   public String crearNecesidad(String entidadId, Integer nivelDeUrgencia, String descripcion, Integer cantidadObjetivo, String productoSolicitadoId, TipoNecesidadMaterialEnum tipo) {
     NecesidadMaterialDTO dto = new NecesidadMaterialDTO(
-            null,
-            entidadId,
-            nivelDeUrgencia,
-            descripcion,
-            cantidadObjetivo,
-            productoSolicitadoId,
-            tipo
+            null,                  // id
+            entidadId,             // entidadID
+            nivelDeUrgencia,       // nivelDeUrgencia
+            descripcion,           // descripcion
+            cantidadObjetivo,      // cantidadObjetivo
+            0,                     // cantidadRecibida (agregado para completar los 8 campos)
+            productoSolicitadoId,  // productoSolicitadoID
+            tipo                   // tipo
     );
 
     NecesidadMaterialDTO creada = this.donadoresYEntidadesClient.guardarNecesidad(dto);
@@ -138,6 +161,12 @@ public class Fachada {
       return "❌ Error: No se pudo registrar la necesidad en el microservicio.";
     }
 
+    int cantidadRecibida = (creada.cantidadRecibida() != null) ? creada.cantidadRecibida() : 0;
+
+    String infoStock = (cantidadRecibida > 0)
+            ? "📦 *Stock Asignado:* " + cantidadRecibida + " unidades"
+            : "⚠️ *Stock Asignado:* 0 unidades (Sin stock disponible en Logística por el momento)";
+
     return "✅ *Necesidad Registrada con Éxito*\n\n" +
             "🆔 *ID Necesidad:* `" + creada.id() + "`\n" +
             "🏢 *Entidad ID:* " + creada.entidadID() + "\n" +
@@ -145,26 +174,51 @@ public class Fachada {
             "📝 *Descripción:* " + creada.descripcion() + "\n" +
             "🔢 *Cantidad Objetivo:* " + creada.cantidadObjetivo() + "\n" +
             "📦 *Producto ID:* " + creada.productoSolicitadoID() + "\n" +
-            "🏷️ *Tipo:* " + creada.tipo();
+            "🏷️ *Tipo:* " + creada.tipo() + "\n\n" +
+            infoStock;
   }
 
-  public String editarNecesidad(Integer id, String nuevaDescripcion) {
-    NecesidadMaterialDTO dto = new NecesidadMaterialDTO(
-            id, null, null, nuevaDescripcion, null, null, null
-    );
-    NecesidadMaterialDTO editada = this.donadoresYEntidadesClient.editarNecesidad(id, dto);
 
-    if (editada == null) {
-      return "❌ Error: No se pudo editar la necesidad con ID " + id;
+
+  public String editarNecesidad(Integer id, Integer nivelDeUrgencia, String descripcion) {
+    try {
+      // Armamos el DTO pasando únicamente los campos que modificamos
+      NecesidadMaterialDTO dto = new NecesidadMaterialDTO(
+              id,                     // 1. id (para identificar)
+              null,                   // 2. entidadID (no se toca)
+              nivelDeUrgencia,        // 3. nivelDeUrgencia
+              descripcion,            // 4. descripcion
+              null,                   // 5. cantidadObjetivo (no se toca)
+              null,                   // 6. cantidadRecibida (no se toca)
+              null,                   // 7. productoSolicitadoID (no se toca)
+              null                    // 8. tipo (no se toca)
+      );
+
+      NecesidadMaterialDTO editada = this.donadoresYEntidadesClient.editarNecesidad(id, dto);
+
+      if (editada == null) {
+        return "❌ *Error:* No existe ninguna necesidad con el ID *" + id + "*.";
+      }
+
+      return "✏️ *Necesidad Actualizada con Éxito*\n\n" +
+              "🆔 *ID:* `" + editada.id() + "`\n" +
+              "🔥 *Nueva Urgencia:* " + editada.nivelDeUrgencia() + "\n" +
+              "📝 *Nueva Descripción:* " + editada.descripcion();
+
+    } catch (Exception e) {
+      return "❌ *Error:* No existe ninguna necesidad registrada con el ID *" + id + "*.";
     }
-
-    return "✏️ *Necesidad Actualizada*\n\n" +
-            "🆔 *ID:* `" + editada.id() + "`\n" +
-            "📝 *Nueva Descripción:* " + editada.descripcion();
   }
 
-  public void borrarNecesidadPorID(Integer id) {
-    this.donadoresYEntidadesClient.borrarNecesidad(id);
+
+
+  public String borrarNecesidadPorID(Integer id) {
+    try {
+      this.donadoresYEntidadesClient.borrarNecesidad(id);
+      return "✅ Necesidad ID *" + id + "* eliminada correctamente.";
+    } catch (Exception e) {
+      return "❌ *Error:* No existe ninguna necesidad registrada con el ID *" + id + "* para eliminar.";
+    }
   }
 
   public String buscarNecesidadPorId(Integer id) {
@@ -183,6 +237,4 @@ public class Fachada {
             "📦 *Producto ID:* " + necesidad.productoSolicitadoID() + "\n" +
             "🏷️ *Tipo:* " + necesidad.tipo();
   }
-
-
 }

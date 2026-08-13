@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -80,21 +81,24 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "ACT_DONADORES_TODOS":
-                    procesarComando(chatId, "/donadores_todos");
+                    procesarComando(chatId, null, "/donadores_todos");
                     break;
 
                 // --- INSTRUCCIONES ACCIONES ADMIN (ENTIDADES) ---
                 case "ACT_CREAR_ENTIDAD":
-                    enviarTexto(chatId, "🏢 *Crear Entidad*\n\n" +
-                            "Enviá los datos de la entidad **separados por coma**:\n\n" +
+                    enviarTexto(chatId, "🏢 *Crear Entidad Benéfica*\n\n" +
+                            "Enviá los datos de la entidad **separados por coma** respetando el siguiente orden:\n\n" +
+                            "📋 *Campos requeridos:* `Razón Social, Domicilio, Teléfono, Correo`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/crear_entidad Fundación Cimientos, Av. Medrano 951, 1144332211, contacto@cimientos.org`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_EDITAR_ENTIDAD":
                     enviarTexto(chatId, "✏️ *Editar Entidad*\n\n" +
-                            "Enviá el ID de la entidad y el nuevo nombre:\n\n" +
-                            "`/editar_entidad 1 CimientosOficial`\n\n" +
+                            "Enviá el ID y los nuevos datos de la entidad **separados por coma**:\n\n" +
+                            "`/editar_entidad 1, Fundación Cimientos, Av. Medrano 951, 1144332211, contacto@cimientos.org`\n\n" +
+                            "_(Formato: ID, Razón Social, Domicilio, Teléfono, Correo)_\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
@@ -106,7 +110,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "ACT_ENTIDADES_TODAS":
-                    procesarComando(chatId, "/entidades_todas");
+                    procesarComando(chatId, null, "/entidades_todas");
                     break;
 
                 // --- INSTRUCCIONES ACCIONES ADMIN (NECESIDADES) ---
@@ -119,9 +123,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "ACT_EDITAR_NECESIDAD":
-                    enviarTexto(chatId, "✏️ *Modificar Necesidad*\n\n" +
-                            "Enviá el ID de la necesidad y la nueva descripción:\n\n" +
-                            "`/editar_necesidad 5 Leche Larga Vida`\n\n" +
+                    enviarTexto(chatId, "✏️ *Editar Necesidad*\n\n" +
+                            "Enviá el ID, la nueva urgencia y la descripción **separados por coma**:\n\n" +
+                            "📋 *Campos requeridos:* `ID, Urgencia, Descripción`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/editar_necesidad 5, 4, Leche Larga Vida `\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
@@ -148,12 +154,13 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         // B) MANEJO DE COMANDOS DE TEXTO
         if (update.hasMessage() && update.getMessage().hasText()) {
             long chatId = update.getMessage().getChatId();
+            int messageId = update.getMessage().getMessageId();
             String mensaje = update.getMessage().getText().trim();
 
             if ("/start".equalsIgnoreCase(mensaje)) {
                 enviarMenuInicial(chatId);
             } else {
-                procesarComando(chatId, mensaje);
+                procesarComando(chatId, messageId, mensaje);
             }
         }
     }
@@ -252,7 +259,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
     // --- PROCESAMIENTO DE COMANDOS DE TEXTO ---
 
-    private void procesarComando(long chatId, String mensaje) {
+    private void procesarComando(long chatId, Integer messageId, String mensaje) {
         String[] partes = mensaje.split(" ", 2);
         String comando = partes[0].toLowerCase();
         String arg = partes.length > 1 ? partes[1].trim() : "";
@@ -260,6 +267,15 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         String respuesta;
         try {
             switch (comando) {
+                // =============================================================
+                // COMANDOS DE UTILIDAD CHAT
+                // =============================================================
+                case "/limpiar":
+                case "/borrar":
+                    borrarUltimosMensajes(chatId, messageId, 50);
+                    enviarMenuInicial(chatId);
+                    return;
+
                 // =============================================================
                 // COMANDOS DONADORES
                 // =============================================================
@@ -318,12 +334,15 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID. Ejemplo: `/donador 1`");
                     Integer idBuscado = parsearId(arg);
                     DonadorDTO donador = this.fachada.buscarDonadorPorId(idBuscado);
-                    respuesta = (donador != null) ? "👤 *Donador encontrado:*\n" + donador : "No se encontró el donador con ID " + idBuscado;
+
+                    respuesta = (donador != null)
+                            ? formatearDonador(donador)
+                            : "❌ No se encontró ningún donador con el ID *" + idBuscado + "*";
                     break;
 
                 case "/donadores_todos":
                     List<DonadorDTO> donadores = this.fachada.buscarTodosLosDonadores();
-                    respuesta = "📋 *Lista de Donadores:*\n" + donadores.toString();
+                    respuesta = formatearListaDonadores(donadores);
                     break;
 
                 // =============================================================
@@ -350,9 +369,20 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "/editar_entidad":
-                    String[] subArgsEnt = arg.split(" ", 2);
-                    if (subArgsEnt.length < 2) throw new IllegalArgumentException("Faltan datos. Ejemplo: `/editar_entidad 1 NuevoNombre`");
-                    respuesta = this.fachada.editarEntidad(parsearId(subArgsEnt[0]), subArgsEnt[1]);
+                    String[] camposEditEnt = arg.split(",");
+                    if (camposEditEnt.length < 5) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/editar_entidad ID, Razón Social, Domicilio, Teléfono, Correo`"
+                        );
+                    }
+
+                    Integer idEntEdit = parsearId(camposEditEnt[0].trim());
+                    String rsEdit = camposEditEnt[1].trim();
+                    String domEdit = camposEditEnt[2].trim();
+                    String telEdit = camposEditEnt[3].trim();
+                    String corEdit = camposEditEnt[4].trim();
+
+                    respuesta = this.fachada.editarEntidad(idEntEdit, rsEdit, domEdit, telEdit, corEdit);
                     break;
 
                 case "/entidad":
@@ -392,16 +422,33 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "/editar_necesidad":
-                    String[] subArgsEditNec = arg.split(" ", 2);
-                    if (subArgsEditNec.length < 2) throw new IllegalArgumentException("Faltan datos. Ejemplo: `/editar_necesidad 5 NuevaDesc`");
-                    respuesta = this.fachada.editarNecesidad(parsearId(subArgsEditNec[0]), subArgsEditNec[1]);
+                    String[] camposEditNec = arg.split(",");
+                    if (camposEditNec.length < 3) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/editar_necesidad ID, Urgencia, Descripción`\n\n" +
+                                        "Ejemplo:\n`/editar_necesidad 5, 4, Leche Larga Vida - URGENTE`"
+                        );
+                    }
+
+                    Integer idNecEdit = parsearId(camposEditNec[0].trim());
+                    Integer urgenciaEdit = parsearId(camposEditNec[1].trim());
+                    String descEdit = camposEditNec[2].trim();
+
+                    if (descEdit.isEmpty()) {
+                        throw new IllegalArgumentException("La descripción no puede estar vacía.");
+                    }
+
+                    respuesta = this.fachada.editarNecesidad(
+                            idNecEdit,
+                            urgenciaEdit,
+                            descEdit
+                    );
                     break;
 
                 case "/borrar_necesidad":
                     if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID. Ejemplo: `/borrar_necesidad 5`");
                     Integer idBorrar = parsearId(arg);
-                    this.fachada.borrarNecesidadPorID(idBorrar);
-                    respuesta = "✅ Necesidad ID " + idBorrar + " eliminada correctamente.";
+                    respuesta = this.fachada.borrarNecesidadPorID(idBorrar);
                     break;
 
                 case "/necesidad":
@@ -410,7 +457,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 default:
-                    respuesta = "Comando no reconocido. Enviá /start para abrir el menú principal.";
+                    respuesta = "Comando no reconocido. Enviá /start para abrir el menú principal o /limpiar para reiniciar la pantalla.";
                     break;
             }
         } catch (Exception e) {
@@ -420,7 +467,54 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         enviarTexto(chatId, respuesta);
     }
 
-    // --- MÉTODOS AUXILIARES ---
+    // --- MÉTODOS AUXILIARES Y FORMATEO ---
+
+    private void borrarUltimosMensajes(long chatId, Integer ultimoMessageId, int cantidad) {
+        if (ultimoMessageId == null) return;
+        for (int i = 0; i < cantidad; i++) {
+            try {
+                DeleteMessage delete = new DeleteMessage();
+                delete.setChatId(String.valueOf(chatId));
+                delete.setMessageId(ultimoMessageId - i);
+                execute(delete);
+            } catch (Exception ignored) {
+                // Omite errores si el mensaje ya no existe o es demasiado viejo
+            }
+        }
+    }
+
+    private String formatearDonador(DonadorDTO d) {
+        return "👤 *Donador Encontrado*\n\n" +
+                "🆔 *ID:* `" + d.id() + "`\n" +
+                "👤 *Nombre:* " + d.nombre() + " " + d.apellido() + "\n" +
+                "🎂 *Edad:* " + d.edad() + " años\n" +
+                "📧 *Email:* " + d.email() + "\n" +
+                "📄 *DNI:* " + d.nroDocumento() + "\n" +
+                "🏠 *Domicilio:* " + d.domicilio() + "\n" +
+                "✅ *Estado:* " + (d.estado() != null ? d.estado() : "Sin estado") + "\n" +
+                "🏷️ *Categoría:* " + (d.categoria() != null ? d.categoria() : "Sin categoría");
+    }
+
+    private String formatearListaDonadores(List<DonadorDTO> donadores) {
+        if (donadores == null || donadores.isEmpty()) {
+            return "⚠️ *No hay donadores registrados en el sistema.*";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("📋 *Lista de Donadores (Total: ").append(donadores.size()).append(")*\n");
+        sb.append("─────────────────────────\n\n");
+
+        for (DonadorDTO d : donadores) {
+            sb.append("👤 *").append(d.nombre()).append(" ").append(d.apellido()).append("* (ID: `").append(d.id()).append("`)\n")
+                    .append("📄 *DNI:* ").append(d.nroDocumento()).append(" | 📧 `").append(d.email()).append("`\n")
+                    .append("🏠 *Domicilio:* ").append(d.domicilio()).append("\n")
+                    .append("✅ *Estado:* ").append(d.estado() != null ? d.estado() : "Sin estado").append("\n")
+                    .append("🏷️ *Categoría:* ").append(d.categoria() != null ? d.categoria() : "Sin categoría").append("\n\n")
+                    .append("─────────────────────────\n\n");
+        }
+
+        return sb.toString().trim();
+    }
 
     private Integer parsearId(String texto) {
         try {

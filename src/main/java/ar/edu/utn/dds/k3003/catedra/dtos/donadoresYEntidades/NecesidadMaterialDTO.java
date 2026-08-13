@@ -1,10 +1,11 @@
 package ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades;
 
 public record NecesidadMaterialDTO(
-    Integer id,
-    String entidadID,
-    Integer nivelDeUrgencia,
-    String descripcion,
-    Integer cantidadObjetivo,
-    String productoSolicitadoID,
-    TipoNecesidadMaterialEnum tipo) {}
+        Integer id,
+        String entidadID,
+        Integer nivelDeUrgencia,
+        String descripcion,
+        Integer cantidadObjetivo,
+        Integer cantidadRecibida,
+        String productoSolicitadoID,
+        TipoNecesidadMaterialEnum tipo) {}

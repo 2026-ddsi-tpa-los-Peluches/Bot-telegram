@@ -7,6 +7,7 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.NecesidadMaterialDT
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.QuejaDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -133,6 +134,25 @@ public class DonadoresYEntidadesClient {
             return response.getBody();
         } catch (Exception e) {
             throw new RuntimeException("Error de comunicación al consultar todas las entidades", e);
+        }
+    }
+
+    public EntidadBeneficaDTO editarEntidad(Integer id, EntidadBeneficaDTO dto) {
+        try {
+            String url = baseUrl + "/entidades/" + id;
+
+            HttpEntity<EntidadBeneficaDTO> requestEntity = new HttpEntity<>(dto);
+            ResponseEntity<EntidadBeneficaDTO> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    EntidadBeneficaDTO.class
+            );
+
+            return response.getBody();
+        } catch (Exception e) {
+            System.err.println("Error al editar entidad en el microservicio: " + e.getMessage());
+            return null;
         }
     }
 
