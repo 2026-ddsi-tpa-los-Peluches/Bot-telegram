@@ -183,6 +183,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(crearBoton("👤 Donador", "ROL_DONADOR"));
+        row.add(crearBoton("🚚 Logística", "ROL_LOGISTICA"));
         row.add(crearBoton("🛠️ Admin", "ROL_ADMIN"));
         rows.add(row);
 
