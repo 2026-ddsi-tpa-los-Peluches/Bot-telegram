@@ -150,6 +150,38 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
+                // --- INSTRUCCIONES ACCIONES LOGÍSTICA ---
+                case "ACT_CREAR_DEPOSITO":
+                    enviarTexto(chatId, "🏢 *Crear Depósito*\n\n" +
+                            "Enviá los datos **separados por coma**:\n\n" +
+                            "`/crear_deposito Deposito Central, Av. Siempre Viva 123, 500, true`\n\n" +
+                            "_(Formato: Nombre, Dirección, Capacidad, FIFO/LIFO)_\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_DEPOSITO_POR_ID":
+                    enviarTexto(chatId, "🔍 *Consultar Depósito por ID*\n\n" +
+                            "Enviá el comando seguido del ID:\n\n" +
+                            "`/deposito 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
+                    break;
+
+                case "ACT_DEPOSITOS_TODOS":
+                    procesarComando(chatId, null, "/depositos_todos");
+                    break;
+
+                case "ACT_ASIGNACIONES_TODAS":
+                    procesarComando(chatId, null, "/asignaciones_todas");
+                    break;
+
+                case "ACT_GESTIONAR_DONACION":
+                    enviarTexto(chatId, "📦 *Gestionar Donación*\n\n" +
+                            "Enviá los datos **separados por coma**:\n\n" +
+                            "`/gestionar_donacion 1, 10, PROD-101, 5`\n\n" +
+                            "_(Formato: DepositoID, DonacionID, ProductoID, Cantidad)_\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
                 default:
                     break;
             }
