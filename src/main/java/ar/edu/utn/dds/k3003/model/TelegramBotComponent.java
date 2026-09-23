@@ -3,6 +3,7 @@ package ar.edu.utn.dds.k3003.model;
 import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.TipoNecesidadMaterialEnum;
+import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -48,6 +49,10 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 // --- MENÚS PRINCIPALES ---
                 case "ROL_DONADOR":
                     mostrarSubmenuDonador(chatId);
+                    break;
+
+                case "ROL_LOGISTICA":
+                    mostrarSubmenuLogistica(chatId);
                     break;
 
                 case "ROL_ADMIN":
@@ -180,6 +185,40 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         row.add(crearBoton("👤 Donador", "ROL_DONADOR"));
         row.add(crearBoton("🛠️ Admin", "ROL_ADMIN"));
         rows.add(row);
+
+        markup.setKeyboard(rows);
+        message.setReplyMarkup(markup);
+
+        ejecutarMensaje(message);
+    }
+
+    private void mostrarSubmenuLogistica(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("🚚 *Panel de Logística*\nSeleccioná la acción que necesites realizar:");
+        message.setParseMode(ParseMode.MARKDOWN);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("🏢 Crear Depósito", "ACT_CREAR_DEPOSITO"));
+        row1.add(crearBoton("🔍 Depósito ID", "ACT_DEPOSITO_POR_ID"));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("📋 Ver Depósitos", "ACT_DEPOSITOS_TODOS"));
+        row2.add(crearBoton("📊 Ver Asignaciones", "ACT_ASIGNACIONES_TODAS"));
+
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        row3.add(crearBoton("📦 Gestionar Donación", "ACT_GESTIONAR_DONACION"));
+
+        List<InlineKeyboardButton> row4 = new ArrayList<>();
+        row4.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+        rows.add(row4);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -456,6 +495,41 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     respuesta = this.fachada.buscarNecesidadPorId(parsearId(arg));
                     break;
 
+                // =============================================================
+                // COMANDOS LOGÍSTICA
+                // =============================================================
+                case "/crear_deposito":
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/crear_deposito Nombre, Dirección, Capacidad, FIFO`"
+                        );
+                    }
+                    respuesta = this.fachada.crearDeposito(arg);
+                    break;
+
+                case "/deposito":
+                    if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID. Ejemplo: `/deposito 1`");
+                    respuesta = this.fachada.buscarDepositoPorId(parsearId(arg));
+                    break;
+
+                case "/depositos_todos":
+                    respuesta = this.fachada.obtenerDepositos();
+                    break;
+
+                case "/asignaciones_todas":
+                    respuesta = this.fachada.obtenerAsignaciones();
+                    break;
+
+                case "/gestionar_donacion":
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/gestionar_donacion DepositoID, DonacionID, ProductoID, Cantidad`"
+                        );
+                    }
+                    respuesta = this.fachada.gestionarDonacion(arg);
+                    break;
+
+
                 default:
                     respuesta = "Comando no reconocido. Enviá /start para abrir el menú principal o /limpiar para reiniciar la pantalla.";
                     break;
@@ -466,6 +540,8 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
         enviarTexto(chatId, respuesta);
     }
+
+
 
     // --- MÉTODOS AUXILIARES Y FORMATEO ---
 

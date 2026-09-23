@@ -5,7 +5,12 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorStatsDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.EntidadBeneficaDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.NecesidadMaterialDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.TipoNecesidadMaterialEnum;
+import ar.edu.utn.dds.k3003.catedra.dtos.logistica.AsignacionDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.logistica.PaqueteDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.logistica.TipoAlgoritmoEnum;
 import ar.edu.utn.dds.k3003.componentes.DonadoresYEntidadesClient;
+import ar.edu.utn.dds.k3003.componentes.LogisticaClient;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,13 +20,23 @@ public class Fachada {
 
   private final DonadoresYEntidadesClient donadoresYEntidadesClient;
 
-  public Fachada(DonadoresYEntidadesClient donadoresYEntidadesClient) {
+  private final LogisticaClient logisticaClient;
+
+  public Fachada(DonadoresYEntidadesClient donadoresYEntidadesClient, LogisticaClient logisticaClient) {
     this.donadoresYEntidadesClient = donadoresYEntidadesClient;
+    this.logisticaClient = logisticaClient;
   }
 
   // =========================================================================
-  // Módulo Donadores
+  // Módulo Donadores y Entidades
   // =========================================================================
+
+
+
+  // -----------------------------------------
+  // DONADORES
+  // -----------------------------------------
+
 
   public DonadorDTO registrarDonador(DonadorDTO donadorDTO) {
     return this.donadoresYEntidadesClient.guardarDonador(donadorDTO);
@@ -56,9 +71,9 @@ public class Fachada {
     return this.donadoresYEntidadesClient.buscarTodosLosDonadores();
   }
 
-  // =========================================================================
-  // Módulo Entidades Benéficas
-  // =========================================================================
+  //-----------------------------------------
+  // ENTIDADES BENEFICAS
+  // -----------------------------------------
 
   public String editarEntidad(Integer id, String razonSocial, String domicilio, String telefono, String correo) {
     try {
@@ -237,4 +252,97 @@ public class Fachada {
             "📦 *Producto ID:* " + necesidad.productoSolicitadoID() + "\n" +
             "🏷️ *Tipo:* " + necesidad.tipo();
   }
+
+
+// =========================================================================
+// Módulo LOGISTICA
+// =========================================================================
+
+  public String crearDeposito(String arg) {
+    String[] campos = arg.split(",");
+    if (campos.length < 4) {
+      throw new IllegalArgumentException("Formato esperado:\n`/crear_deposito Nombre, Dirección, CapacidadMáxima, TipoAlgoritmo(FIFO/FEFO/etc)`");
+    }
+    String nombre = campos[0].trim();
+    String direccion = campos[1].trim();
+    Integer capacidad = parsearId(campos[2].trim());
+    TipoAlgoritmoEnum algoritmo = TipoAlgoritmoEnum.valueOf(campos[3].trim().toUpperCase());
+
+    DepositoDTO nuevo = new DepositoDTO(null, algoritmo, nombre, direccion, capacidad, null);
+    DepositoDTO creado = this.logisticaClient.agregarDeposito(nuevo);
+
+    return "✅ *Depósito creado con éxito!*\n\n" +
+            "🆔 *ID:* `" + creado.id() + "`\n" +
+            "🏢 *Nombre:* " + creado.nombre() + "\n" +
+            "📍 *Dirección:* " + creado.direccion() + "\n" +
+            "📦 *Capacidad:* " + creado.capacidadMaxima();
+  }
+
+  public String gestionarDonacion(String arg) {
+    String[] campos = arg.split(",");
+    if (campos.length < 4) {
+      throw new IllegalArgumentException("Formato esperado:\n`/gestionar_donacion DepositoID, DonacionID, ProductoID, Cantidad`");
+    }
+    String depositoId = campos[0].trim();
+    String donacionId = campos[1].trim();
+    String productoId = campos[2].trim();
+    Integer cantidad = parsearId(campos[3].trim());
+
+    this.logisticaClient.gestionarDonacion(depositoId, donacionId, productoId, cantidad);
+    return "📦 *Donación enviada a cola de procesamiento con éxito.*";
+  }
+
+  private Integer parsearId(String texto) {
+    try {
+      return Integer.valueOf(texto.trim());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("El valor ingresado debe ser un número entero válido.");
+    }
+  }
+
+  private String formatearDeposito(DepositoDTO d) {
+    return "🏢 *Depósito*\n\n" +
+            "🆔 *ID:* `" + d.id() + "`\n" +
+            "📛 *Nombre:* " + d.nombre() + "\n" +
+            "📍 *Dirección:* " + d.direccion() + "\n" +
+            "📊 *Capacidad Max:* " + d.capacidadMaxima() + "\n" +
+            "⚙️ *Algoritmo:* " + d.algoritmo();
+  }
+
+  private String formatearListaDepositos(List<DepositoDTO> depositos) {
+    if (depositos == null || depositos.isEmpty()) return "⚠️ *No hay depósitos registrados.*";
+    StringBuilder sb = new StringBuilder("📋 *Lista de Depósitos (" + depositos.size() + ")*\n\n");
+    for (DepositoDTO d : depositos) {
+      sb.append("• *").append(d.nombre()).append("* (ID: `").append(d.id()).append("`) - ").append(d.direccion()).append("\n");
+    }
+    return sb.toString();
+  }
+
+  private String formatearListaAsignaciones(List<AsignacionDTO> asignaciones) {
+    if (asignaciones == null || asignaciones.isEmpty()) return "⚠️ *No hay asignaciones.*";
+    return "📋 *Total de asignaciones registradas:* " + asignaciones.size();
+  }
+
+  private String formatearListaPaquetes(List<PaqueteDTO> paquetes) {
+    if (paquetes == null || paquetes.isEmpty()) return "⚠️ *No hay paquetes.*";
+    return "📋 *Total de paquetes en stock:* " + paquetes.size();
+  }
+
+
+  public String buscarDepositoPorId(Integer id) {
+    DepositoDTO dep = this.logisticaClient.buscarDepositoPorId(id);
+    return dep != null ? formatearDeposito(dep) : "❌ Depósito no encontrado.";
+  }
+
+  public String obtenerDepositos() {
+    List<DepositoDTO> depositos = this.logisticaClient.obtenerDepositos();
+    return formatearListaDepositos(depositos);
+  }
+
+
+  public String obtenerAsignaciones() {
+    List<AsignacionDTO> asignaciones = this.logisticaClient.obtenerAsignaciones();
+    return formatearListaAsignaciones(asignaciones);
+  }
+
 }
