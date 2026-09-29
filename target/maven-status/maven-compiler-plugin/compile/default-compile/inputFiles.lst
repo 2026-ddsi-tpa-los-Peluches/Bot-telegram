@@ -28,8 +28,11 @@
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/catedra/fachadas/FachadaIncentivos.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/catedra/fachadas/FachadaLogistica.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/DonadoresYEntidadesClient.java
+/home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/IncentivosClient.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/LogisticaClient.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/Request/DonadorRequest.java
+/home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/Request/InsigniaIDRequest.java
+/home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/Request/MisionIDRequest.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/componentes/TelegramClient.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/config/TelegramConfig.java
 /home/liam/Data/Ftd/ISI/Proyectos/disenio/losPeluches/Bot-telegram/src/main/java/ar/edu/utn/dds/k3003/exceptions/DonadorNoEncontradoException.java

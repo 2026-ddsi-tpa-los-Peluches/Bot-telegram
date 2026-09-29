@@ -5,11 +5,14 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorStatsDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.EntidadBeneficaDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.NecesidadMaterialDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.TipoNecesidadMaterialEnum;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.AsignacionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.PaqueteDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.TipoAlgoritmoEnum;
 import ar.edu.utn.dds.k3003.componentes.DonadoresYEntidadesClient;
+import ar.edu.utn.dds.k3003.componentes.IncentivosClient;
 import ar.edu.utn.dds.k3003.componentes.LogisticaClient;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +25,14 @@ public class Fachada {
 
   private final LogisticaClient logisticaClient;
 
-  public Fachada(DonadoresYEntidadesClient donadoresYEntidadesClient, LogisticaClient logisticaClient) {
+  private final IncentivosClient incentivosClient;
+
+  public Fachada(DonadoresYEntidadesClient donadoresYEntidadesClient,
+                 LogisticaClient logisticaClient,
+                 IncentivosClient incentivosClient) {
     this.donadoresYEntidadesClient = donadoresYEntidadesClient;
     this.logisticaClient = logisticaClient;
+    this.incentivosClient = incentivosClient;
   }
 
   // =========================================================================
@@ -292,13 +300,6 @@ public class Fachada {
     return "📦 *Donación enviada a cola de procesamiento con éxito.*";
   }
 
-  private Integer parsearId(String texto) {
-    try {
-      return Integer.valueOf(texto.trim());
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("El valor ingresado debe ser un número entero válido.");
-    }
-  }
 
   private String formatearDeposito(DepositoDTO d) {
     return "🏢 *Depósito*\n\n" +
@@ -344,5 +345,82 @@ public class Fachada {
     List<AsignacionDTO> asignaciones = this.logisticaClient.obtenerAsignaciones();
     return formatearListaAsignaciones(asignaciones);
   }
+  // =========================================================================
+  // Módulo Incentivos (Insignias y Misiones)
+  // =========================================================================
+
+  public InsigniaDTO agregarInsignia(InsigniaDTO dto) {
+    return this.incentivosClient.agregarInsignia(dto);
+  }
+
+  public List<InsigniaDTO> getAllInsignias() {
+    return this.incentivosClient.getAllInsignias();
+  }
+
+  public InsigniaDTO getInsignia(String id) {
+    return this.incentivosClient.getInsignia(id);
+  }
+
+  public void eliminarInsignia(String id) {
+    this.incentivosClient.eliminarInsignia(id);
+  }
+
+  public void asignarInsigniaADonador(String donadorID, InsigniaDTO insigniaDTO) {
+    this.incentivosClient.asignarInsigniaADonador(donadorID, insigniaDTO.id());
+  }
+
+  public List<InsigniaDTO> getInsigniasDeDonador(String donadorID) {
+    return this.incentivosClient.getInsigniasDeDonador(donadorID);
+  }
+
+  public MisionDTO agregarMision(MisionDTO dto) {
+    return this.incentivosClient.agregarMision(dto);
+  }
+
+  public List<MisionDTO> getAllMisiones() {
+    return this.incentivosClient.getAllMisiones();
+  }
+
+  public MisionDTO getMision(String id) {
+    return this.incentivosClient.getMision(id);
+  }
+
+  public void eliminarMision(String id) {
+    this.incentivosClient.eliminarMision(id);
+  }
+
+  public String categoriaActualDeDonador(String donadorID) {
+    DonadorDTO donador = this.donadoresYEntidadesClient.buscarDonadorPorId(Integer.valueOf(donadorID));
+    if (donador != null && donador.categoria() != null) {
+      return donador.categoria();
+    }
+    return "";
+  }
+
+  public void asignarMisionADonador(String donadorID, MisionDTO misionDTO) {
+    this.incentivosClient.asignarMisionADonador(donadorID, misionDTO.id());
+  }
+
+  public MisionDTO getMisionEnCursoDeDonador(String donadorID) {
+    return this.incentivosClient.getMisionEnCursoDeDonador(donadorID);
+  }
+
+  public void quitarMisionDeDonador(String donadorID) {
+    this.incentivosClient.quitarMisionDeDonador(donadorID);
+  }
+
+
+  // =========================================================================
+  // Métodos Auxiliares
+  // =========================================================================
+
+  private Integer parsearId(String texto) {
+    try {
+      return Integer.valueOf(texto.trim());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("El valor ingresado debe ser un número entero válido.");
+    }
+  }
+
 
 }

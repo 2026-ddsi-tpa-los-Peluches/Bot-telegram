@@ -3,10 +3,13 @@ package ar.edu.utn.dds.k3003.model;
 import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.TipoNecesidadMaterialEnum;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -43,27 +46,47 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         // A) MANEJO DE BOTONES INTERACTIVOS (CallbackQuery)
         if (update.hasCallbackQuery()) {
             String callData = update.getCallbackQuery().getData();
+
+            System.out.println("🔘 CALLBACK RECIBIDO: " + callData);
+
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+            try {
+                AnswerCallbackQuery answer = new AnswerCallbackQuery();
+                answer.setCallbackQueryId(update.getCallbackQuery().getId());
+                execute(answer);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
 
             switch (callData) {
                 // --- MENÚS PRINCIPALES ---
-                case "ROL_DONADOR":
+                case "ROL_DONADORES":
                     mostrarSubmenuDonador(chatId);
                     break;
+
+                case "ROL_ENTIDADES":
+                    mostrarSubmenuDonador(chatId);
+                    break;
+
 
                 case "ROL_LOGISTICA":
                     mostrarSubmenuLogistica(chatId);
                     break;
 
-                case "ROL_ADMIN":
-                    mostrarSubmenuAdmin(chatId);
+                case "ROL_INCENTIVOS":
+                    mostrarSubmenuIncentivos(chatId);
+                    break;
+
+                case "ROL_DONACIONES":
+                    mostrarSubmenuDonaciones(chatId);
                     break;
 
                 case "MENU_INICIAL":
                     enviarMenuInicial(chatId);
                     break;
 
-                // --- INSTRUCCIONES ACCIONES DONADOR ---
+                // --- INSTRUCCIONES ACCIONES DONADORES Y ENTIDADES ---
                 case "ACT_REGISTRAR":
                     enviarTexto(chatId, "📝 *Registrarse como Donador*\n\n" +
                             "Enviá un mensaje con tus datos **separados por coma**:\n\n" +
@@ -182,6 +205,44 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
+                // --- INSTRUCCIONES ACCIONES INCENTIVOS ---
+
+                case "ACT_INSIGNIAS_TODAS":
+                    procesarComando(chatId, null, "/insignias_todas");
+                    break;
+
+                case "ACT_MISIONES_TODAS":
+                    procesarComando(chatId, null, "/misiones_todas");
+                    break;
+
+                case "ACT_ASIGNAR_INSIGNIA":
+                    enviarTexto(chatId, "🏅 *Asignar Insignia a Donador*\n\n" +
+                            "Enviá el ID del donador y el ID de la insignia **separados por coma**:\n\n" +
+                            "`/asignar_insignia 1, INSIG-01`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_ASIGNAR_MISION":
+                    enviarTexto(chatId, "🎯 *Asignar Misión a Donador*\n\n" +
+                            "Enviá el ID del donador y el ID de la misión **separados por coma**:\n\n" +
+                            "`/asignar_mision 1, MISION-01`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_MISION_CURSO":
+                    enviarTexto(chatId, "🔍 *Consultar Misión en Curso*\n\n" +
+                            "Enviá el comando seguido del ID del donador:\n\n" +
+                            "`/mision_curso 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
+                    break;
+
+                case "ACT_QUITAR_MISION":
+                    enviarTexto(chatId, "❌ *Cancelar Misión en Curso*\n\n" +
+                            "Enviá el comando seguido del ID del donador:\n\n" +
+                            "`/quitar_mision 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
+                    break;
+
                 default:
                     break;
             }
@@ -214,9 +275,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
         List<InlineKeyboardButton> row = new ArrayList<>();
-        row.add(crearBoton("👤 Donador", "ROL_DONADOR"));
+        row.add(crearBoton("👤 Donador", "ROL_DONADORES"));
+        row.add(crearBoton("👤 Entidad", "ROL_ENTIDADES"));
         row.add(crearBoton("🚚 Logística", "ROL_LOGISTICA"));
-        row.add(crearBoton("🛠️ Admin", "ROL_ADMIN"));
+        row.add(crearBoton("🛠️ Admin", "ROL_DONACIONES"));
+        row.add(crearBoton("🚀 Incentivos", "ROL_INCENTIVOS"));
         rows.add(row);
 
         markup.setKeyboard(rows);
@@ -289,7 +352,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         ejecutarMensaje(message);
     }
 
-    private void mostrarSubmenuAdmin(long chatId) {
+    private void mostrarSubmenuDonaciones(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText("🛠️ *Panel de Administración*\nSeleccioná el módulo u opción que necesites:");
@@ -322,6 +385,41 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         rows.add(row3);
         rows.add(row4);
         rows.add(row5);
+
+        markup.setKeyboard(rows);
+        message.setReplyMarkup(markup);
+
+        ejecutarMensaje(message);
+    }
+
+    private void mostrarSubmenuIncentivos(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("🚀 *Panel de Incentivos*\nSeleccioná la acción que necesites realizar:");
+        message.setParseMode(ParseMode.MARKDOWN);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("📋 Ver Insignias", "ACT_INSIGNIAS_TODAS"));
+        row1.add(crearBoton("🎯 Ver Misiones", "ACT_MISIONES_TODAS"));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("🏅 Asignar Insignia", "ACT_ASIGNAR_INSIGNIA"));
+        row2.add(crearBoton("🎯 Asignar Misión", "ACT_ASIGNAR_MISION"));
+
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        row3.add(crearBoton("🔍 Misión en Curso", "ACT_MISION_CURSO"));
+        row3.add(crearBoton("❌ Cancelar Misión", "ACT_QUITAR_MISION"));
+
+        List<InlineKeyboardButton> row4 = new ArrayList<>();
+        row4.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+        rows.add(row4);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -562,6 +660,67 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     respuesta = this.fachada.gestionarDonacion(arg);
                     break;
 
+                // =============================================================
+                // COMANDOS INCENTIVOS
+                // =============================================================
+                case "/insignias_todas":
+                    List<InsigniaDTO> insignias = this.fachada.getAllInsignias();
+                    respuesta = formatearListaInsignias(insignias);
+                    break;
+
+                case "/misiones_todas":
+                    List<MisionDTO> misiones = this.fachada.getAllMisiones();
+                    respuesta = formatearListaMisiones(misiones);
+                    break;
+
+                case "/asignar_insignia":
+                    String[] camposIns = arg.split(",");
+                    if (camposIns.length < 2) {
+                        throw new IllegalArgumentException("Formato esperado: `/asignar_insignia DonadorID, InsigniaID`");
+                    }
+                    String donIdIns = camposIns[0].trim();
+                    String insId = camposIns[1].trim();
+                    InsigniaDTO insigniaDTO = this.fachada.getInsignia(insId);
+                    if (insigniaDTO == null) throw new IllegalArgumentException("Insignia no encontrada.");
+                    this.fachada.asignarInsigniaADonador(donIdIns, insigniaDTO);
+                    respuesta = "✅ *¡Insignia asignada con éxito al donador " + donIdIns + "!*";
+                    break;
+
+                case "/asignar_mision":
+                    String[] camposMis = arg.split(",");
+                    if (camposMis.length < 2) {
+                        throw new IllegalArgumentException("Formato esperado: `/asignar_mision DonadorID, MisionID`");
+                    }
+                    String donIdMis = camposMis[0].trim();
+                    String misId = camposMis[1].trim();
+                    MisionDTO misionDTO = this.fachada.getMision(misId);
+                    if (misionDTO == null) throw new IllegalArgumentException("Misión no encontrada.");
+
+                    String categoriaDonador = this.fachada.categoriaActualDeDonador(donIdMis);
+                    if (!misionDTO.categoriaInicio().name().equalsIgnoreCase(categoriaDonador)) {
+                        throw new IllegalStateException("Error 409: La categoría inicial de la misión no coincide con la del donador.");
+                    }
+
+                    this.fachada.asignarMisionADonador(donIdMis, misionDTO);
+                    respuesta = "✅ *¡Misión asignada con éxito al donador " + donIdMis + "!*";
+                    break;
+
+                case "/mision_curso":
+                    if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID del donador. Ejemplo: `/mision_curso 1`");
+                    MisionDTO misionCurso = this.fachada.getMisionEnCursoDeDonador(arg);
+                    respuesta = (misionCurso != null)
+                            ? "🎯 *Misión en curso:*\nID: `" + misionCurso.id() + "`\nDescripción: " + misionCurso.nombre()
+                            : "⚠️ El donador no tiene ninguna misión en curso.";
+                    break;
+
+                case "/quitar_mision":
+                    if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID del donador. Ejemplo: `/quitar_mision 1`");
+                    this.fachada.quitarMisionDeDonador(arg);
+                    respuesta = "✅ *Misión en curso cancelada correctamente para el donador ID " + arg + ".*";
+                    break;
+
+
+
 
                 default:
                     respuesta = "Comando no reconocido. Enviá /start para abrir el menú principal o /limpiar para reiniciar la pantalla.";
@@ -625,6 +784,24 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         return sb.toString().trim();
     }
 
+    private String formatearListaInsignias(List<InsigniaDTO> insignias) {
+        if (insignias == null || insignias.isEmpty()) return "⚠️ *No hay insignias registradas.*";
+        StringBuilder sb = new StringBuilder("📋 *Lista de Insignias (" + insignias.size() + ")*\n\n");
+        for (InsigniaDTO i : insignias) {
+            sb.append("• *").append(i.id()).append("* - ").append(i.descripcion() != null ? i.descripcion() : "Sin descripción").append("\n");
+        }
+        return sb.toString();
+    }
+
+    private String formatearListaMisiones(List<MisionDTO> misiones) {
+        if (misiones == null || misiones.isEmpty()) return "⚠️ *No hay misiones registradas.*";
+        StringBuilder sb = new StringBuilder("📋 *Lista de Misiones (" + misiones.size() + ")*\n\n");
+        for (MisionDTO m : misiones) {
+            sb.append("• *").append(m.id()).append("* (Inicio: ").append(m.categoriaInicio()).append(")\n");
+        }
+        return sb.toString();
+    }
+
     private Integer parsearId(String texto) {
         try {
             return Integer.valueOf(texto.trim());
@@ -647,12 +824,20 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         message.setParseMode(ParseMode.MARKDOWN);
         ejecutarMensaje(message);
     }
-
     private void ejecutarMensaje(SendMessage message) {
         try {
             execute(message);
         } catch (TelegramApiException e) {
+            System.err.println("❌ ERROR ENVIANDO MENSAJE A TELEGRAM:");
             e.printStackTrace();
         }
     }
+
+//    private void ejecutarMensaje(SendMessage message) {
+//        try {
+//            execute(message);
+//        } catch (TelegramApiException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
