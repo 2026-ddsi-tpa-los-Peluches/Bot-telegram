@@ -1,5 +1,6 @@
 package ar.edu.utn.dds.k3003;
 
+import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.*;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorStatsDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.EntidadBeneficaDTO;
@@ -11,6 +12,7 @@ import ar.edu.utn.dds.k3003.catedra.dtos.logistica.AsignacionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.PaqueteDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.TipoAlgoritmoEnum;
+import ar.edu.utn.dds.k3003.componentes.DonacionesClient;
 import ar.edu.utn.dds.k3003.componentes.DonadoresYEntidadesClient;
 import ar.edu.utn.dds.k3003.componentes.IncentivosClient;
 import ar.edu.utn.dds.k3003.componentes.LogisticaClient;
@@ -18,6 +20,7 @@ import ar.edu.utn.dds.k3003.componentes.Request.AsignacionRequest;
 import ar.edu.utn.dds.k3003.componentes.Request.DepositoRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,12 +32,18 @@ public class Fachada {
 
   private final IncentivosClient incentivosClient;
 
-  public Fachada(DonadoresYEntidadesClient donadoresYEntidadesClient,
-                 LogisticaClient logisticaClient,
-                 IncentivosClient incentivosClient) {
+  private final DonacionesClient donacionesClient;
+
+  public Fachada(
+          DonadoresYEntidadesClient donadoresYEntidadesClient,
+          LogisticaClient logisticaClient,
+          IncentivosClient incentivosClient,
+          DonacionesClient donacionesClient) {
+
     this.donadoresYEntidadesClient = donadoresYEntidadesClient;
     this.logisticaClient = logisticaClient;
     this.incentivosClient = incentivosClient;
+    this.donacionesClient = donacionesClient;
   }
 
   // =========================================================================
@@ -450,4 +459,323 @@ public class Fachada {
   }
 
 
+// =========================================================================
+// Módulo DONACIONES
+// =========================================================================
+
+// -----------------------------------------
+// CATEGORÍAS
+// -----------------------------------------
+
+  public String crearCategoria(String nombre, String descripcion) {
+    CategoriaDTO dto = new CategoriaDTO(null, nombre, descripcion);
+    CategoriaDTO creada = this.donacionesClient.agregarCategoria(dto);
+
+    return "✅ *Categoría creada correctamente*\n\n" +
+            "🆔 *ID:* `" + creada.id() + "`\n" +
+            "📛 *Nombre:* " + creada.nombre() + "\n" +
+            "📝 *Descripción:* " + creada.descripcion();
+  }
+
+  public String obtenerCategorias() {
+    List<CategoriaDTO> categorias = this.donacionesClient.obtenerCategorias();
+
+    if (categorias == null || categorias.isEmpty()) {
+      return "⚠️ *No hay categorías registradas.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Categorías registradas*\n\n");
+
+    for (CategoriaDTO c : categorias) {
+      sb.append("• *")
+              .append(c.nombre())
+              .append("* — ID: `")
+              .append(c.id())
+              .append("`\n")
+              .append("  📝 ")
+              .append(c.descripcion())
+              .append("\n\n");
+    }
+
+    return sb.toString();
+  }
+
+  public String borrarCategoria(String id) {
+    this.donacionesClient.eliminarCategoria(id);
+    return "✅ Categoría `" + id + "` eliminada correctamente.";
+  }
+
+// -----------------------------------------
+// IDENTIFICADORES
+// -----------------------------------------
+
+  public String crearIdentificador(String tipo, String descripcion) {
+    TipoIdentificadorEnum tipoEnum;
+
+    try {
+      tipoEnum = TipoIdentificadorEnum.valueOf(tipo.trim().toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("El tipo debe ser QR o CODIGODEBARRAS.");
+    }
+
+    IdentificadorDTO dto = new IdentificadorDTO(null, tipoEnum, descripcion);
+    IdentificadorDTO creado = this.donacionesClient.agregarIdentificador(dto);
+
+    return "✅ *Identificador creado correctamente*\n\n" +
+            "🆔 *ID:* `" + creado.id() + "`\n" +
+            "🏷️ *Tipo:* " + creado.tipo() + "\n" +
+            "📝 *Descripción:* " + creado.descripcion();
+  }
+
+  public String obtenerIdentificadores() {
+    List<IdentificadorDTO> identificadores = this.donacionesClient.obtenerIdentificadores();
+
+    if (identificadores == null || identificadores.isEmpty()) {
+      return "⚠️ *No hay identificadores registrados.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Identificadores registrados*\n\n");
+
+    for (IdentificadorDTO i : identificadores) {
+      sb.append("• *ID:* `")
+              .append(i.id())
+              .append("`\n")
+              .append("  🏷️ *Tipo:* ")
+              .append(i.tipo())
+              .append("\n")
+              .append("  📝 ")
+              .append(i.descripcion())
+              .append("\n\n");
+    }
+
+    return sb.toString();
+  }
+
+  public String borrarIdentificador(String id) {
+    this.donacionesClient.eliminarIdentificador(id);
+    return "✅ Identificador `" + id + "` eliminado correctamente.";
+  }
+
+// -----------------------------------------
+// PRODUCTOS
+// -----------------------------------------
+
+  public String crearProducto(
+          String nombre,
+          String descripcion,
+          String categoriaID,
+          String identificadorID) {
+
+    ProductoDTO dto = new ProductoDTO(
+            null,
+            nombre,
+            descripcion,
+            categoriaID,
+            identificadorID
+    );
+
+    ProductoDTO creado = this.donacionesClient.agregarProducto(dto);
+    return formatearProducto(creado);
+  }
+
+  public String obtenerProductos() {
+    List<ProductoDTO> productos = this.donacionesClient.obtenerProductos();
+    return formatearListaProductos(productos);
+  }
+
+  public String buscarProductoPorId(String id) {
+    ProductoDTO producto = this.donacionesClient.buscarProductoPorId(id);
+
+    if (producto == null) {
+      return "❌ No se encontró el producto con ID `" + id + "`.";
+    }
+
+    return formatearProducto(producto);
+  }
+
+  public String modificarProducto(
+          String id,
+          String nombre,
+          String descripcion,
+          String categoriaID,
+          String identificadorID) {
+
+    ProductoDTO dto = new ProductoDTO(
+            id,
+            nombre,
+            descripcion,
+            categoriaID,
+            identificadorID
+    );
+
+    ProductoDTO actualizado = this.donacionesClient.actualizarProducto(id, dto);
+
+    return "✅ *Producto actualizado correctamente*\n\n" +
+            formatearProducto(actualizado);
+  }
+
+  public String borrarProducto(String id) {
+    this.donacionesClient.eliminarProducto(id);
+    return "✅ Producto `" + id + "` eliminado correctamente.";
+  }
+
+// -----------------------------------------
+// DONACIONES
+// -----------------------------------------
+
+  public String registrarDonacion(
+          String donadorID,
+          String depositoID,
+          String descripcion,
+          String productoID,
+          Integer cantidad) {
+
+    DonacionDTO dto = new DonacionDTO(
+            null,
+            donadorID,
+            depositoID,
+            descripcion,
+            productoID,
+            cantidad,
+            EstadoDonacionEnum.INGRESADA
+    );
+
+    DonacionDTO creada = this.donacionesClient.registrarDonacion(dto);
+    return formatearDonacion(creada);
+  }
+
+  public String obtenerDonaciones() {
+    List<DonacionDTO> donaciones = this.donacionesClient.obtenerDonaciones();
+    return formatearListaDonaciones(donaciones);
+  }
+
+  public String buscarDonacionPorId(String id) {
+    DonacionDTO donacion = this.donacionesClient.buscarDonacionPorId(id);
+
+    if (donacion == null) {
+      return "❌ No se encontró la donación con ID `" + id + "`.";
+    }
+
+    return formatearDonacion(donacion);
+  }
+
+  public String borrarDonacion(String id) {
+    this.donacionesClient.eliminarDonacion(id);
+    return "✅ Donación `" + id + "` eliminada correctamente.";
+  }
+
+  public String buscarDonacionesPorDonadorYFecha(
+          String donadorID,
+          LocalDate fechaInicio) {
+
+    List<DonacionDTO> donaciones = this.donacionesClient.buscarPorDonadorYFecha(
+            donadorID,
+            fechaInicio
+    );
+
+    return formatearListaDonaciones(donaciones);
+  }
+
+  public String cambiarEstadoDonacion(String id, String estado) {
+    EstadoDonacionEnum estadoEnum;
+
+    try {
+      estadoEnum = EstadoDonacionEnum.valueOf(estado.trim().toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Estado inválido. Usá INGRESADA, ACEPTADA o CONQUEJA.");
+    }
+
+    DonacionDTO actualizada = this.donacionesClient.cambiarEstadoDeDonacion(id, estadoEnum);
+    return formatearDonacion(actualizada);
+  }
+
+  public String registrarQueja(String id, String descripcion) {
+    DonacionDTO actualizada = this.donacionesClient.registrarQueja(id, descripcion);
+    return formatearDonacion(actualizada);
+  }
+
+  public String resetearDonaciones() {
+    return this.donacionesClient.resetDatabase();
+  }
+
+// -----------------------------------------
+// MÉTODOS PRIVADOS DE FORMATEO
+// -----------------------------------------
+
+  private String formatearProducto(ProductoDTO creado) {
+    if (creado == null) {
+      return "❌ Producto no encontrado.";
+    }
+
+    return "✅ *¡Producto creado correctamente!*\n\n" +
+            "🆔 *ID:* `" + creado.id() + "`\n" +
+            "📛 *Nombre:* " + creado.nombre() + "\n" +
+            "📝 *Descripción:* " + (creado.descripcion() != null ? creado.descripcion() : "Sin descripción") + "\n" +
+            "📂 *Categoría ID:* `" + creado.categoriaID() + "`\n" +
+            "🏷️ *Identificador ID:* `" + creado.identificadorID() + "`";
+  }
+
+  private String formatearListaProductos(List<ProductoDTO> productos) {
+    if (productos == null || productos.isEmpty()) {
+      return "⚠️ *No hay productos registrados.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Productos registrados (" + productos.size() + ")*\n\n");
+
+    for (ProductoDTO p : productos) {
+      sb.append("• *")
+              .append(p.nombre())
+              .append("* — ID: `")
+              .append(p.id())
+              .append("`\n")
+              .append("  📝 ")
+              .append(p.descripcion())
+              .append("\n\n");
+    }
+
+    return sb.toString();
+  }
+
+  private String formatearDonacion(DonacionDTO d) {
+    if (d == null) {
+      return "❌ Donación no encontrada.";
+    }
+
+    return "🎁 *Donación*\n\n" +
+            "🆔 *ID:* `" + d.id() + "`\n" +
+            "👤 *Donador ID:* " + d.donadorID() + "\n" +
+            "🏢 *Depósito ID:* " + d.depositoID() + "\n" +
+            "📦 *Producto ID:* " + d.productoID() + "\n" +
+            "🔢 *Cantidad:* " + d.cantidad() + "\n" +
+            "📊 *Estado:* " + d.estado() + "\n" +
+            "📝 *Descripción:* " + d.descripcion();
+  }
+
+  private String formatearListaDonaciones(List<DonacionDTO> donaciones) {
+    if (donaciones == null || donaciones.isEmpty()) {
+      return "⚠️ *No hay donaciones registradas.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Donaciones (" + donaciones.size() + ")*\n\n");
+
+    for (DonacionDTO d : donaciones) {
+      sb.append("• *ID:* `")
+              .append(d.id())
+              .append("`\n")
+              .append("  👤 Donador: ")
+              .append(d.donadorID())
+              .append("\n")
+              .append("  📦 Producto: ")
+              .append(d.productoID())
+              .append("\n")
+              .append("  🔢 Cantidad: ")
+              .append(d.cantidad())
+              .append("\n")
+              .append("  📊 Estado: ")
+              .append(d.estado())
+              .append("\n\n");
+    }
+
+    return sb.toString();
+  }
 }

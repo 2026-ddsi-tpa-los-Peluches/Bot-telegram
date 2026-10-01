@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,14 +62,9 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
             switch (callData) {
                 // --- MENÚS PRINCIPALES ---
-                case "ROL_DONADORES":
-                    mostrarSubmenuDonador(chatId);
+                case "ROL_DONADORES_Y_ENTIDADES":
+                    mostrarSubmenuDonadoresYEntidades(chatId);
                     break;
-
-                case "ROL_ENTIDADES":
-                    mostrarSubmenuDonador(chatId);
-                    break;
-
 
                 case "ROL_LOGISTICA":
                     mostrarSubmenuLogistica(chatId);
@@ -243,6 +239,76 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
+                // DONACIONES
+                case "DON_CATEGORIAS":
+                    procesarComando(
+                            chatId,
+                            null,
+                            "/categorias"
+                    );
+                    break;
+
+                case "DON_CREAR_CATEGORIA":
+                    enviarTexto(
+                            chatId,
+                            "🏷️ *Crear Categoría*\\n\\n" +
+                                    "Formato:\\n" +
+                                    "`/crear_categoria Nombre, Descripción`"
+                    );
+                    break;
+
+                case "DON_PRODUCTOS":
+                    procesarComando(
+                            chatId,
+                            null,
+                            "/productos"
+                    );
+                    break;
+
+                case "DON_CREAR_PRODUCTO":
+                    enviarTexto(
+                            chatId,
+                            "📦 *Crear Producto*\\n\\n" +
+                                    "Formato:\\n" +
+                                    "`/crear_producto Nombre, Descripción, CategoriaID, IdentificadorID`"
+                    );
+                    break;
+
+                case "DON_IDENTIFICADORES":
+                    procesarComando(
+                            chatId,
+                            null,
+                            "/identificadores"
+                    );
+                    break;
+
+                case "DON_CREAR_IDENTIFICADOR":
+                    enviarTexto(
+                            chatId,
+                            "🔖 *Crear Identificador*\\n\\n" +
+                                    "Formato:\\n" +
+                                    "`/crear_identificador QR, Descripción`\\n\\n" +
+                                    "Tipos válidos: `QR` o `CODIGODEBARRAS`"
+                    );
+                    break;
+
+                case "DON_DONACIONES":
+                    procesarComando(
+                            chatId,
+                            null,
+                            "/donaciones"
+                    );
+                    break;
+
+                case "DON_CREAR_DONACION":
+                    enviarTexto(
+                            chatId,
+                            "🎁 *Registrar Donación*\\n\\n" +
+                                    "Formato:\\n" +
+                                    "`/crear_donacion DonadorID, DepositoID, Descripción, ProductoID, Cantidad`"
+                    );
+                    break;
+
                 default:
                     break;
             }
@@ -274,13 +340,16 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        row.add(crearBoton("👤 Donador", "ROL_DONADORES"));
-        row.add(crearBoton("👤 Entidad", "ROL_ENTIDADES"));
-        row.add(crearBoton("🚚 Logística", "ROL_LOGISTICA"));
-        row.add(crearBoton("🛠️ Admin", "ROL_DONACIONES"));
-        row.add(crearBoton("🚀 Incentivos", "ROL_INCENTIVOS"));
-        rows.add(row);
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("👤 Donador o Entidad", "ROL_DONADORES_Y_ENTIDADES"));
+        row1.add(crearBoton("🎁 Donaciones", "ROL_DONACIONES"));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("🚚 Logística", "ROL_LOGISTICA"));
+        row2.add(crearBoton("🚀 Incentivos", "ROL_INCENTIVOS"));
+
+        rows.add(row1);
+        rows.add(row2);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -322,45 +391,16 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         ejecutarMensaje(message);
     }
 
-    private void mostrarSubmenuDonador(long chatId) {
+    private void mostrarSubmenuDonadoresYEntidades(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("👤 *Panel de Donadores*\n¿Qué acción querés realizar?");
+        message.setText("👤 *Panel de Donadores y Entidades*\n¿Qué acción querés realizar?");
         message.setParseMode(ParseMode.MARKDOWN);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-        List<InlineKeyboardButton> row1 = new ArrayList<>();
-        row1.add(crearBoton("📝 Registrarse", "ACT_REGISTRAR"));
-        row1.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
-
-        List<InlineKeyboardButton> row2 = new ArrayList<>();
-        row2.add(crearBoton("🔍 Buscar por ID", "ACT_DONADOR_POR_ID"));
-        row2.add(crearBoton("📋 Ver Todos los donadores", "ACT_DONADORES_TODOS"));
-
-        List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
-
-        rows.add(row1);
-        rows.add(row2);
-        rows.add(row3);
-
-        markup.setKeyboard(rows);
-        message.setReplyMarkup(markup);
-
-        ejecutarMensaje(message);
-    }
-
-    private void mostrarSubmenuDonaciones(long chatId) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText("🛠️ *Panel de Administración*\nSeleccioná el módulo u opción que necesites:");
-        message.setParseMode(ParseMode.MARKDOWN);
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
+        // ENTIDADES
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         row1.add(crearBoton("🏢 Crear Entidad", "ACT_CREAR_ENTIDAD"));
         row1.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
@@ -369,16 +409,67 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         row2.add(crearBoton("🔍 Entidad por ID", "ACT_ENTIDAD_POR_ID"));
         row2.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
 
+        // DONADORES
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
-        row3.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
+        row3.add(crearBoton("📝 Registrarse", "ACT_REGISTRAR"));
+        row3.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
-        row4.add(crearBoton("🔍 Necesidad por ID", "ACT_NECESIDAD_POR_ID"));
+        row4.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
+        row4.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
 
+        // VOLVER
         List<InlineKeyboardButton> row5 = new ArrayList<>();
         row5.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+        rows.add(row4);
+        rows.add(row5);
+
+        markup.setKeyboard(rows);
+        message.setReplyMarkup(markup);
+
+        ejecutarMensaje(message);
+    }
+
+    private void mostrarSubmenuDonaciones(long chatId) {
+
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(
+                "🎁 *Panel de Donaciones*\n" +
+                        "Seleccioná la operación:"
+        );
+        message.setParseMode(ParseMode.MARKDOWN);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        // CATEGORÍAS
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("🏷️ Categorías", "DON_CATEGORIAS"));
+        row1.add(crearBoton("➕ Crear Categoría", "DON_CREAR_CATEGORIA"));
+
+        // PRODUCTOS
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("📦 Productos", "DON_PRODUCTOS"));
+        row2.add(crearBoton("➕ Crear Producto", "DON_CREAR_PRODUCTO"));
+
+        // IDENTIFICADORES
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        row3.add(crearBoton("🔖 Identificadores", "DON_IDENTIFICADORES"));
+        row3.add(crearBoton("➕ Crear Identificador", "DON_CREAR_IDENTIFICADOR"));
+
+        // DONACIONES
+        List<InlineKeyboardButton> row4 = new ArrayList<>();
+        row4.add(crearBoton("🎁 Ver Donaciones", "DON_DONACIONES"));
+        row4.add(crearBoton("➕ Registrar Donación", "DON_CREAR_DONACION"));
+
+        // VOLVER
+        List<InlineKeyboardButton> row5 = new ArrayList<>();
+        row5.add(crearBoton("⬅️ Volver", "MENU_INICIAL"));
 
         rows.add(row1);
         rows.add(row2);
@@ -726,6 +817,376 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID del donador. Ejemplo: `/quitar_mision 1`");
                     this.fachada.quitarMisionDeDonador(arg);
                     respuesta = "✅ *Misión en curso cancelada correctamente para el donador ID " + arg + ".*";
+                    break;
+
+                    // =============================================================
+                    // COMANDOS DONACIONES
+                    // =============================================================
+
+                case "/crear_categoria":
+
+                    String[] camposCategoria = arg.split(",");
+
+                    if (camposCategoria.length < 2) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado: " +
+                                        "`/crear_categoria Nombre, Descripción`"
+                        );
+                    }
+
+                    String nombreCategoria =
+                            camposCategoria[0].trim();
+
+                    String descripcionCategoria =
+                            camposCategoria[1].trim();
+
+                    respuesta = this.fachada.crearCategoria(
+                            nombreCategoria,
+                            descripcionCategoria
+                    );
+
+                    break;
+
+
+                case "/categorias":
+
+                    respuesta =
+                            this.fachada.obtenerCategorias();
+
+                    break;
+
+
+                case "/borrar_categoria":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/borrar_categoria 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.borrarCategoria(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/crear_identificador":
+
+                    String[] camposIdentificador =
+                            arg.split(",");
+
+                    if (camposIdentificador.length < 2) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado: " +
+                                        "`/crear_identificador QR, Descripción`"
+                        );
+                    }
+
+                    String tipoIdentificador =
+                            camposIdentificador[0].trim();
+
+                    String descripcionIdentificador =
+                            camposIdentificador[1].trim();
+
+                    respuesta =
+                            this.fachada.crearIdentificador(
+                                    tipoIdentificador,
+                                    descripcionIdentificador
+                            );
+
+                    break;
+
+
+                case "/identificadores":
+
+                    respuesta =
+                            this.fachada.obtenerIdentificadores();
+
+                    break;
+
+
+                case "/borrar_identificador":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/borrar_identificador 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.borrarIdentificador(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/crear_producto":
+
+                    String[] camposProducto =
+                            arg.split(",");
+
+                    if (camposProducto.length < 4) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/crear_producto Nombre, Descripción, CategoriaID, IdentificadorID`"
+                        );
+                    }
+
+                    String nombreProducto =
+                            camposProducto[0].trim();
+
+                    String descripcionProducto =
+                            camposProducto[1].trim();
+
+                    String categoriaProducto =
+                            camposProducto[2].trim();
+
+                    String identificadorProducto =
+                            camposProducto[3].trim();
+
+                    respuesta =
+                            this.fachada.crearProducto(
+                                    nombreProducto,
+                                    descripcionProducto,
+                                    categoriaProducto,
+                                    identificadorProducto
+                            );
+
+                    break;
+
+
+                case "/productos":
+
+                    respuesta =
+                            this.fachada.obtenerProductos();
+
+                    break;
+
+
+                case "/producto":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/producto 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.buscarProductoPorId(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/editar_producto":
+
+                    String[] camposEditarProducto =
+                            arg.split(",");
+
+                    if (camposEditarProducto.length < 5) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/editar_producto ID, Nombre, Descripción, CategoriaID, IdentificadorID`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.modificarProducto(
+                                    camposEditarProducto[0].trim(),
+                                    camposEditarProducto[1].trim(),
+                                    camposEditarProducto[2].trim(),
+                                    camposEditarProducto[3].trim(),
+                                    camposEditarProducto[4].trim()
+                            );
+
+                    break;
+
+
+                case "/borrar_producto":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/borrar_producto 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.borrarProducto(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/crear_donacion":
+
+                    String[] camposDonacion =
+                            arg.split(",");
+
+                    if (camposDonacion.length < 5) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/crear_donacion DonadorID, DepositoID, Descripción, ProductoID, Cantidad`"
+                        );
+                    }
+
+                    String donadorID =
+                            camposDonacion[0].trim();
+
+                    String depositoID =
+                            camposDonacion[1].trim();
+
+                    String descripcionDonacion =
+                            camposDonacion[2].trim();
+
+                    String productoIDDonacion =
+                            camposDonacion[3].trim();
+
+                    Integer cantidadDonacion =
+                            parsearId(
+                                    camposDonacion[4].trim()
+                            );
+
+                    respuesta =
+                            this.fachada.registrarDonacion(
+                                    donadorID,
+                                    depositoID,
+                                    descripcionDonacion,
+                                    productoIDDonacion,
+                                    cantidadDonacion
+                            );
+
+                    break;
+
+
+                case "/donaciones":
+
+                    respuesta =
+                            this.fachada.obtenerDonaciones();
+
+                    break;
+
+
+                case "/donacion":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/donacion 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.buscarDonacionPorId(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/borrar_donacion":
+
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Falta el ID. Ejemplo: `/borrar_donacion 1`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.borrarDonacion(
+                                    arg.trim()
+                            );
+
+                    break;
+
+
+                case "/buscar_donaciones":
+
+                    String[] camposBusqueda =
+                            arg.split(",");
+
+                    if (camposBusqueda.length < 2) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/buscar_donaciones DonadorID, YYYY-MM-DD`"
+                        );
+                    }
+
+                    String donadorBusqueda =
+                            camposBusqueda[0].trim();
+
+                    LocalDate fechaBusqueda;
+
+                    try {
+                        fechaBusqueda =
+                                LocalDate.parse(
+                                        camposBusqueda[1].trim()
+                                );
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(
+                                "La fecha debe tener formato YYYY-MM-DD."
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.buscarDonacionesPorDonadorYFecha(
+                                    donadorBusqueda,
+                                    fechaBusqueda
+                            );
+
+                    break;
+
+
+                case "/cambiar_estado_donacion":
+
+                    String[] camposEstado =
+                            arg.split(",");
+
+                    if (camposEstado.length < 2) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/cambiar_estado_donacion ID, ESTADO`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.cambiarEstadoDonacion(
+                                    camposEstado[0].trim(),
+                                    camposEstado[1].trim()
+                            );
+
+                    break;
+
+
+                case "/queja_donacion":
+
+                    String[] camposQueja =
+                            arg.split(",");
+
+                    if (camposQueja.length < 2) {
+                        throw new IllegalArgumentException(
+                                "Formato esperado:\\n" +
+                                        "`/queja_donacion ID, Descripción de la queja`"
+                        );
+                    }
+
+                    respuesta =
+                            this.fachada.registrarQueja(
+                                    camposQueja[0].trim(),
+                                    camposQueja[1].trim()
+                            );
+
+                    break;
+
+
+                case "/reset_donaciones":
+
+                    respuesta =
+                            this.fachada.resetearDonaciones();
+
                     break;
 
 
