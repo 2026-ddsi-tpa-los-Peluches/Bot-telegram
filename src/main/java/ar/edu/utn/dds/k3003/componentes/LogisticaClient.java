@@ -1,6 +1,8 @@
 package ar.edu.utn.dds.k3003.componentes;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.*;
+import ar.edu.utn.dds.k3003.componentes.Request.AsignacionRequest;
+import ar.edu.utn.dds.k3003.componentes.Request.DepositoRequest;
 import ar.edu.utn.dds.k3003.componentes.Request.DonadorRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -28,10 +30,10 @@ public class LogisticaClient {
     // =========================================================================
 
     // POST /depositos -> Agregar Depósito
-    public DepositoDTO agregarDeposito(DepositoDTO depositoDTO) {
+    public DepositoDTO agregarDeposito(DepositoRequest depositoRequest) {
         try {
             String url = baseUrl + "/depositos";
-            ResponseEntity<DepositoDTO> response = restTemplate.postForEntity(url, depositoDTO, DepositoDTO.class);
+            ResponseEntity<DepositoDTO> response = restTemplate.postForEntity(url, depositoRequest, DepositoDTO.class);
             return response.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw new RuntimeException("Error en microservicio Logística (Guardar Depósito): " + e.getResponseBodyAsString(), e);
@@ -87,14 +89,14 @@ public class LogisticaClient {
     }
 
     // GET /asignaciones -> Obtener Asignaciones
-    public List<AsignacionDTO> obtenerAsignaciones() {
+    public List<AsignacionRequest> obtenerAsignaciones() {
         try {
             String url = baseUrl + "/asignaciones";
-            ResponseEntity<List<AsignacionDTO>> response = restTemplate.exchange(
+            ResponseEntity<List<AsignacionRequest>> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<AsignacionDTO>>() {}
+                    new ParameterizedTypeReference<List<AsignacionRequest>>() {}
             );
             return response.getBody();
         } catch (Exception e) {

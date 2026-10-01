@@ -177,7 +177,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 case "ACT_CREAR_DEPOSITO":
                     enviarTexto(chatId, "🏢 *Crear Depósito*\n\n" +
                             "Enviá los datos **separados por coma**:\n\n" +
-                            "`/crear_deposito Deposito Central, Av. Siempre Viva 123, 500, true`\n\n" +
+                            "`/crear_deposito Deposito Central, Av. Siempre Viva 123, 500, SUB_ATENDIDOS`\n\n" +
                             "_(Formato: Nombre, Dirección, Capacidad, FIFO/LIFO)_\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
@@ -632,7 +632,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 case "/crear_deposito":
                     if (arg.isEmpty()) {
                         throw new IllegalArgumentException(
-                                "Faltan datos. Formato esperado:\n`/crear_deposito Nombre, Dirección, Capacidad, FIFO`"
+                                "Faltan datos. Formato esperado:\n`/crear_deposito Nombre, Dirección, Capacidad, TipoAlgoritmoEnum`"
                         );
                     }
                     respuesta = this.fachada.crearDeposito(arg);

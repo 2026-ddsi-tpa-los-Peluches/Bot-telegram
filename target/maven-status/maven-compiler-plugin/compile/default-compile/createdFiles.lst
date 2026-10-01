@@ -13,6 +13,8 @@ ar/edu/utn/dds/k3003/exceptions/DonadorYaExistenteException.class
 ar/edu/utn/dds/k3003/componentes/TelegramClient.class
 ar/edu/utn/dds/k3003/catedra/dtos/donadoresYEntidades/EntidadBeneficaDTO.class
 ar/edu/utn/dds/k3003/catedra/dtos/donaciones/TipoIdentificadorEnum.class
+ar/edu/utn/dds/k3003/componentes/Request/AsignacionRequest.class
+ar/edu/utn/dds/k3003/componentes/Request/DepositoRequest.class
 ar/edu/utn/dds/k3003/catedra/fachadas/FachadaLogistica.class
 ar/edu/utn/dds/k3003/exceptions/EntidadYaExistenteException.class
 ar/edu/utn/dds/k3003/Fachada.class

@@ -14,6 +14,8 @@ import ar.edu.utn.dds.k3003.catedra.dtos.logistica.TipoAlgoritmoEnum;
 import ar.edu.utn.dds.k3003.componentes.DonadoresYEntidadesClient;
 import ar.edu.utn.dds.k3003.componentes.IncentivosClient;
 import ar.edu.utn.dds.k3003.componentes.LogisticaClient;
+import ar.edu.utn.dds.k3003.componentes.Request.AsignacionRequest;
+import ar.edu.utn.dds.k3003.componentes.Request.DepositoRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -269,15 +271,18 @@ public class Fachada {
   public String crearDeposito(String arg) {
     String[] campos = arg.split(",");
     if (campos.length < 4) {
-      throw new IllegalArgumentException("Formato esperado:\n`/crear_deposito Nombre, Dirección, CapacidadMáxima, TipoAlgoritmo(FIFO/FEFO/etc)`");
+      throw new IllegalArgumentException("Formato esperado:\n`/crear_deposito Nombre, Dirección, CapacidadMáxima, TipoAlgoritmo`");
     }
     String nombre = campos[0].trim();
     String direccion = campos[1].trim();
     Integer capacidad = parsearId(campos[2].trim());
     TipoAlgoritmoEnum algoritmo = TipoAlgoritmoEnum.valueOf(campos[3].trim().toUpperCase());
 
-    DepositoDTO nuevo = new DepositoDTO(null, algoritmo, nombre, direccion, capacidad, null);
-    DepositoDTO creado = this.logisticaClient.agregarDeposito(nuevo);
+    // Creamos el request con el nombre de campo correcto que espera Logística
+    DepositoRequest nuevoRequest = new DepositoRequest(nombre, direccion, capacidad, algoritmo);
+
+    // El cliente HTTP le pega al endpoint mandando el request
+    DepositoDTO creado = this.logisticaClient.agregarDeposito(nuevoRequest);
 
     return "✅ *Depósito creado con éxito!*\n\n" +
             "🆔 *ID:* `" + creado.id() + "`\n" +
@@ -302,12 +307,15 @@ public class Fachada {
 
 
   private String formatearDeposito(DepositoDTO d) {
-    return "🏢 *Depósito*\n\n" +
-            "🆔 *ID:* `" + d.id() + "`\n" +
-            "📛 *Nombre:* " + d.nombre() + "\n" +
-            "📍 *Dirección:* " + d.direccion() + "\n" +
-            "📊 *Capacidad Max:* " + d.capacidadMaxima() + "\n" +
-            "⚙️ *Algoritmo:* " + d.algoritmo();
+
+    //si es markdown dessecomentar esto
+    String algoritmoStr = d.algoritmo() != null ? d.algoritmo().toString().replace("_", "\\_") : "N/D";
+    return "🏢 Depósito\n\n" +
+            "🆔 ID: " + d.id() + "\n" +
+            "📛 Nombre: " + d.nombre() + "\n" +
+            "📍 Dirección: " + d.direccion() + "\n" +
+            "📊 Capacidad Max: " + d.capacidadMaxima() + "\n" +
+            "⚙️ Algoritmo: " + algoritmoStr;
   }
 
   private String formatearListaDepositos(List<DepositoDTO> depositos) {
@@ -319,9 +327,28 @@ public class Fachada {
     return sb.toString();
   }
 
-  private String formatearListaAsignaciones(List<AsignacionDTO> asignaciones) {
-    if (asignaciones == null || asignaciones.isEmpty()) return "⚠️ *No hay asignaciones.*";
-    return "📋 *Total de asignaciones registradas:* " + asignaciones.size();
+  private String formatearListaAsignaciones(List<AsignacionRequest> asignaciones) {
+    if (asignaciones == null || asignaciones.isEmpty()) {
+      return "⚠️ *No hay asignaciones.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Lista de Asignaciones (" + asignaciones.size() + ")*\n\n");
+
+    // Formateador para que la fecha quede tipo: 29/09/2026 23:44
+    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    for (AsignacionRequest a : asignaciones) {
+      String estadoStr = a.estado() != null ? a.estado().toString().replace("_", "\\_") : "N/D";
+      String fechaStr = a.fecha() != null ? a.fecha().format(formatter) : "N/D";
+
+      sb.append("• *ID:* `").append(a.id()).append("`\n")
+              .append("  📌 *Necesidad:* ").append(a.necesidadID()).append("\n")
+              .append("  📅 *Fecha:* ").append(fechaStr).append("\n")
+              .append("  📊 *Estado:* ").append(estadoStr).append("\n")
+              .append("  🔢 *Cantidad:* ").append(a.cantidad()).append("\n\n");
+    }
+
+    return sb.toString();
   }
 
   private String formatearListaPaquetes(List<PaqueteDTO> paquetes) {
@@ -342,7 +369,7 @@ public class Fachada {
 
 
   public String obtenerAsignaciones() {
-    List<AsignacionDTO> asignaciones = this.logisticaClient.obtenerAsignaciones();
+    List<AsignacionRequest> asignaciones = this.logisticaClient.obtenerAsignaciones();
     return formatearListaAsignaciones(asignaciones);
   }
   // =========================================================================
