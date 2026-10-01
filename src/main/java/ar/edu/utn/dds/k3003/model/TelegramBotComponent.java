@@ -218,7 +218,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 case "ACT_ASIGNAR_INSIGNIA":
                     enviarTexto(chatId, "🏅 *Asignar Insignia a Donador*\n\n" +
                             "Enviá el ID del donador y el ID de la insignia **separados por coma**:\n\n" +
-                            "`/asignar_insignia 1, INSIG-01`\n\n" +
+                            "`/asignar_insignia 1, 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
@@ -706,11 +706,20 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "/mision_curso":
-                    if (arg.isEmpty()) throw new IllegalArgumentException("Falta el ID del donador. Ejemplo: `/mision_curso 1`");
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException("Falta el ID del donador. Ejemplo: `/mision_curso 1`");
+                    }
+
                     MisionDTO misionCurso = this.fachada.getMisionEnCursoDeDonador(arg);
+
                     respuesta = (misionCurso != null)
-                            ? "🎯 *Misión en curso:*\nID: `" + misionCurso.id() + "`\nDescripción: " + misionCurso.nombre()
-                            : "⚠️ El donador no tiene ninguna misión en curso.";
+                            ? "🎯 *¡Misión en curso del donador!* 🎯\n\n" +
+                            "📌 *Nombre:* " + misionCurso.nombre() + "\n" +
+                            "🆔 *ID:* `" + misionCurso.id() + "`\n" +
+                            "🔹 *Tipo:* " + misionCurso.tipo() + "\n" +
+                            "🏆 *Insignia ID:* " + misionCurso.insigniaID() + "\n" +
+                            "📈 *Categorías:* " + misionCurso.categoriaInicio() + " ➡️ " + misionCurso.categoriaFin()
+                            : "⚠️ El donador no tiene ninguna misión en curso actualmente.";
                     break;
 
                 case "/quitar_mision":
@@ -788,17 +797,27 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         if (insignias == null || insignias.isEmpty()) return "⚠️ *No hay insignias registradas.*";
         StringBuilder sb = new StringBuilder("📋 *Lista de Insignias (" + insignias.size() + ")*\n\n");
         for (InsigniaDTO i : insignias) {
-            sb.append("• *").append(i.id()).append("* - ").append(i.descripcion() != null ? i.descripcion() : "Sin descripción").append("\n");
+            sb.append("• *").append(i.id()).append("* - ")
+                    .append(i.nombre()).append(" - ") // <-- Quitamos el * suelto de acá
+                    .append(i.descripcion() != null ? i.descripcion() : "Sin descripción").append("\n");
         }
         return sb.toString();
     }
 
     private String formatearListaMisiones(List<MisionDTO> misiones) {
-        if (misiones == null || misiones.isEmpty()) return "⚠️ *No hay misiones registradas.*";
-        StringBuilder sb = new StringBuilder("📋 *Lista de Misiones (" + misiones.size() + ")*\n\n");
-        for (MisionDTO m : misiones) {
-            sb.append("• *").append(m.id()).append("* (Inicio: ").append(m.categoriaInicio()).append(")\n");
+        if (misiones == null || misiones.isEmpty()) {
+            return "⚠️ *No hay misiones registradas.*";
         }
+
+        StringBuilder sb = new StringBuilder("📋 *Lista de Misiones (" + misiones.size() + ")*\n\n");
+
+        for (MisionDTO m : misiones) {
+            sb.append("• *").append(m.nombre()).append("* (ID: `").append(m.id()).append("`)\n")
+                    .append("  🔹 *Tipo:* ").append(m.tipo()).append("\n")
+                    .append("  🔹 *Insignia ID:* ").append(m.insigniaID()).append("\n")
+                    .append("  🔹 *Categoría:* ").append(m.categoriaInicio()).append(" ➡️ ").append(m.categoriaFin()).append("\n\n");
+        }
+
         return sb.toString();
     }
 
