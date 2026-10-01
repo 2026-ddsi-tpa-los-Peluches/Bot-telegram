@@ -85,21 +85,24 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 // --- INSTRUCCIONES ACCIONES DONADORES Y ENTIDADES ---
                 case "ACT_REGISTRAR":
                     enviarTexto(chatId, "📝 *Registrarse como Donador*\n\n" +
-                            "Enviá un mensaje con tus datos **separados por coma**:\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Apellido, Edad, Correo, Teléfono, Domicilio`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/registrar Juan, Perez, 30, juan@email.com, 12345678, Av. Medrano 951`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_ESTADISTICAS":
                     enviarTexto(chatId, "📊 *Consultar Estadísticas*\n\n" +
-                            "Enviá el comando con tu ID de donador:\n\n" +
+                            "📋 *Campo requerido:* `DonadorID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/mis_estadisticas 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
                 case "ACT_DONADOR_POR_ID":
                     enviarTexto(chatId, "🔍 *Consultar Donador por ID*\n\n" +
-                            "Enviá el comando con el ID a buscar:\n\n" +
+                            "📋 *Campo requerido:* `DonadorID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/donador 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
@@ -111,7 +114,6 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 // --- INSTRUCCIONES ACCIONES ADMIN (ENTIDADES) ---
                 case "ACT_CREAR_ENTIDAD":
                     enviarTexto(chatId, "🏢 *Crear Entidad Benéfica*\n\n" +
-                            "Enviá los datos de la entidad **separados por coma** respetando el siguiente orden:\n\n" +
                             "📋 *Campos requeridos:* `Razón Social, Domicilio, Teléfono, Correo`\n\n" +
                             "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/crear_entidad Fundación Cimientos, Av. Medrano 951, 1144332211, contacto@cimientos.org`\n\n" +
@@ -120,15 +122,16 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
                 case "ACT_EDITAR_ENTIDAD":
                     enviarTexto(chatId, "✏️ *Editar Entidad*\n\n" +
-                            "Enviá el ID y los nuevos datos de la entidad **separados por coma**:\n\n" +
+                            "📋 *Campos requeridos:* `ID, Razón Social, Domicilio, Teléfono, Correo`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/editar_entidad 1, Fundación Cimientos, Av. Medrano 951, 1144332211, contacto@cimientos.org`\n\n" +
-                            "_(Formato: ID, Razón Social, Domicilio, Teléfono, Correo)_\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_ENTIDAD_POR_ID":
                     enviarTexto(chatId, "🔍 *Consultar Entidad por ID*\n\n" +
-                            "Enviá el comando seguido del ID:\n\n" +
+                            "📋 *Campo requerido:* `EntidadID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/entidad 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
@@ -140,31 +143,32 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 // --- INSTRUCCIONES ACCIONES ADMIN (NECESIDADES) ---
                 case "ACT_CREAR_NECESIDAD":
                     enviarTexto(chatId, "➕ *Alta de Necesidad*\n\n" +
-                            "Enviá los datos **separados por coma**:\n\n" +
-                            "`/crear_necesidad 1, 3, Leche en polvo, 50, PROD-101, RECURRENTE`\n\n" +
-                            "_(Formato: EntidadID, Urgencia(Nro), Descripción, Cantidad, ProductoID, Tipo(EXTRAORDINARIA/RECURRENTE))_\n" +
+                            "📋 *Campos requeridos:* `EntidadID, Urgencia(Nro), Descripción, Cantidad, ProductoID, Tipo (EXTRAORDINARIA/RECURRENTE)`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_necesidad 1, 3, Leche en polvo, 50, 1, RECURRENTE`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_EDITAR_NECESIDAD":
                     enviarTexto(chatId, "✏️ *Editar Necesidad*\n\n" +
-                            "Enviá el ID, la nueva urgencia y la descripción **separados por coma**:\n\n" +
                             "📋 *Campos requeridos:* `ID, Urgencia, Descripción`\n\n" +
                             "💡 *Ejemplo para copiar y modificar:*\n" +
-                            "`/editar_necesidad 5, 4, Leche Larga Vida `\n\n" +
+                            "`/editar_necesidad 5, 4, Leche Larga Vida`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_BORRAR_NECESIDAD":
                     enviarTexto(chatId, "🗑️ *Borrar Necesidad*\n\n" +
-                            "Enviá el ID de la necesidad a eliminar:\n\n" +
+                            "📋 *Campo requerido:* `ID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/borrar_necesidad 5`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
                 case "ACT_NECESIDAD_POR_ID":
                     enviarTexto(chatId, "🔍 *Consultar Necesidad por ID*\n\n" +
-                            "Enviá el comando seguido del ID:\n\n" +
+                            "📋 *Campo requerido:* `NecesidadID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/necesidad 5`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
@@ -172,19 +176,19 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 // --- INSTRUCCIONES ACCIONES LOGÍSTICA ---
                 case "ACT_CREAR_DEPOSITO":
                     enviarTexto(chatId, "🏢 *Crear Depósito*\n\n" +
-                            "Enviá los datos **separados por coma**:\n\n" +
-                            "`/crear_deposito Deposito Central, Av. Siempre Viva 123, 500, SUB_ATENDIDOS`\n\n" +
-                            "_(Formato: Nombre, Dirección, Capacidad, FIFO/LIFO)_\n" +
+                            "📋 *Campos requeridos:* `Nombre, Dirección, Capacidad, Algoritmo (SUB_ATENDIDOS, PRIORIDAD_POR_SCORE)`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_deposito Deposito Central, Av. Siempre Viva 123, 500, PRIORIDAD_POR_SCORE`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_DEPOSITO_POR_ID":
                     enviarTexto(chatId, "🔍 *Consultar Depósito por ID*\n\n" +
-                            "Enviá el comando seguido del ID:\n\n" +
+                            "📋 *Campo requerido:* `DepositoID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/deposito 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
-
                 case "ACT_DEPOSITOS_TODOS":
                     procesarComando(chatId, null, "/depositos_todos");
                     break;
@@ -195,9 +199,9 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
                 case "ACT_GESTIONAR_DONACION":
                     enviarTexto(chatId, "📦 *Gestionar Donación*\n\n" +
-                            "Enviá los datos **separados por coma**:\n\n" +
-                            "`/gestionar_donacion 1, 10, PROD-101, 5`\n\n" +
-                            "_(Formato: DepositoID, DonacionID, ProductoID, Cantidad)_\n" +
+                            "📋 *Campos requeridos:* `DepositoID, DonacionID, ProductoID, Cantidad`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/gestionar_donacion 1, 10, 1, 5`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
@@ -213,28 +217,32 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
                 case "ACT_ASIGNAR_INSIGNIA":
                     enviarTexto(chatId, "🏅 *Asignar Insignia a Donador*\n\n" +
-                            "Enviá el ID del donador y el ID de la insignia **separados por coma**:\n\n" +
+                            "📋 *Campos requeridos:* `DonadorID, InsigniaID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/asignar_insignia 1, 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_ASIGNAR_MISION":
                     enviarTexto(chatId, "🎯 *Asignar Misión a Donador*\n\n" +
-                            "Enviá el ID del donador y el ID de la misión **separados por coma**:\n\n" +
-                            "`/asignar_mision 1, MISION-01`\n\n" +
+                            "📋 *Campos requeridos:* `DonadorID, MisionID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/asignar_mision 1, 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "ACT_MISION_CURSO":
                     enviarTexto(chatId, "🔍 *Consultar Misión en Curso*\n\n" +
-                            "Enviá el comando seguido del ID del donador:\n\n" +
+                            "📋 *Campo requerido:* `DonadorID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/mision_curso 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
                 case "ACT_QUITAR_MISION":
                     enviarTexto(chatId, "❌ *Cancelar Misión en Curso*\n\n" +
-                            "Enviá el comando seguido del ID del donador:\n\n" +
+                            "📋 *Campo requerido:* `DonadorID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/quitar_mision 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
@@ -249,12 +257,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "DON_CREAR_CATEGORIA":
-                    enviarTexto(
-                            chatId,
-                            "🏷️ *Crear Categoría*\\n\\n" +
-                                    "Formato:\\n" +
-                                    "`/crear_categoria Nombre, Descripción`"
-                    );
+                    enviarTexto(chatId, "🏷️ *Crear Categoría*\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Descripción`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_categoria Alimentos, Productos no perecederos`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "DON_PRODUCTOS":
@@ -266,12 +273,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "DON_CREAR_PRODUCTO":
-                    enviarTexto(
-                            chatId,
-                            "📦 *Crear Producto*\\n\\n" +
-                                    "Formato:\\n" +
-                                    "`/crear_producto Nombre, Descripción, CategoriaID, IdentificadorID`"
-                    );
+                    enviarTexto(chatId, "📦 *Crear Producto*\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Descripción, CategoriaID, IdentificadorID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_producto Leche, Leche entera descremada, 1, 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "DON_IDENTIFICADORES":
@@ -283,13 +289,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "DON_CREAR_IDENTIFICADOR":
-                    enviarTexto(
-                            chatId,
-                            "🔖 *Crear Identificador*\\n\\n" +
-                                    "Formato:\\n" +
-                                    "`/crear_identificador QR, Descripción`\\n\\n" +
-                                    "Tipos válidos: `QR` o `CODIGODEBARRAS`"
-                    );
+                    enviarTexto(chatId, "🔖 *Crear Identificador*\n\n" +
+                            "📋 *Campos requeridos:* `Tipo (QR / CODIGODEBARRAS), Descripción`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_identificador QR, Código QR estándar`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 case "DON_DONACIONES":
@@ -301,12 +305,11 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     break;
 
                 case "DON_CREAR_DONACION":
-                    enviarTexto(
-                            chatId,
-                            "🎁 *Registrar Donación*\\n\\n" +
-                                    "Formato:\\n" +
-                                    "`/crear_donacion DonadorID, DepositoID, Descripción, ProductoID, Cantidad`"
-                    );
+                    enviarTexto(chatId, "🎁 *Registrar Donación*\n\n" +
+                            "📋 *Campos requeridos:* `DonadorID, DepositoID, Descripción, ProductoID, Cantidad`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_donacion 1, 1, Donación de leche, 1, 10`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
                 default:
@@ -662,7 +665,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     String[] camposNec = arg.split(",");
                     if (camposNec.length < 6) {
                         throw new IllegalArgumentException(
-                                "Faltan datos. Formato esperado:\n`/crear_necesidad EntidadID, Urgencia, Descripción, Cantidad, ProductoID, Tipo`\n\nEjemplo:\n`/crear_necesidad 1, 3, Leche en polvo, 50, PROD-101, RECURRENTE`"
+                                "Faltan datos. Formato esperado:\n`/crear_necesidad EntidadID, Urgencia, Descripción, Cantidad, ProductoID, Tipo`\n\nEjemplo:\n`/crear_necesidad 1, 3, Leche en polvo, 50, 1, RECURRENTE`"
                         );
                     }
 
