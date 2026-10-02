@@ -58,6 +58,7 @@ ar/edu/utn/dds/k3003/componentes/DonacionesClient$1.class
 ar/edu/utn/dds/k3003/componentes/DonacionesClient$5.class
 ar/edu/utn/dds/k3003/catedra/dtos/donaciones/EstadoDonacionEnum.class
 ar/edu/utn/dds/k3003/componentes/Request/InsigniaIDRequest.class
+ar/edu/utn/dds/k3003/componentes/LogisticaClient$3.class
 ar/edu/utn/dds/k3003/catedra/dtos/donadoresYEntidades/QuejaDTO.class
 ar/edu/utn/dds/k3003/catedra/dtos/donadoresYEntidades/DonadorDTO.class
 ar/edu/utn/dds/k3003/componentes/DonadoresYEntidadesClient$3.class

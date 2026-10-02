@@ -381,6 +381,34 @@ public class Fachada {
     List<AsignacionRequest> asignaciones = this.logisticaClient.obtenerAsignaciones();
     return formatearListaAsignaciones(asignaciones);
   }
+
+  public String obtenerPaquetesFormateados() {
+    List<PaqueteDTO> paquetes = this.logisticaClient.obtenerPaquetes();
+    if (paquetes == null || paquetes.isEmpty()) {
+      return "⚠️ *No hay paquetes registrados en el sistema.*";
+    }
+
+    StringBuilder sb = new StringBuilder("📋 *Lista de Paquetes (" + paquetes.size() + ")*\n\n");
+    for (PaqueteDTO p : paquetes) {
+      sb.append("📦 *ID:* `").append(p.id()).append("`\n")
+              .append("  🔹 *Producto:* ").append(p.producto() != null ? p.producto() : "N/A").append("\n")
+              .append("  🔹 *Cantidad:* ").append(p.cantidad() != null ? p.cantidad() : "N/A").append("\n")
+              .append("  🔹 *Donación ID:* ").append(p.donacionID() != null ? p.donacionID() : "N/A").append("\n\n");
+    }
+    return sb.toString();
+  }
+
+  public String buscarPaquetePorIdFormateado(String id) {
+    PaqueteDTO p = this.logisticaClient.buscarPaquetePorId(id);
+    if (p == null) {
+      return "❌ No se encontró ningún paquete con el ID *" + id + "*";
+    }
+    return "📦 *Información del Paquete*\n\n" +
+            "🆔 *ID:* `" + p.id() + "`\n" +
+            "🔹 *Producto:* " + (p.producto() != null ? p.producto() : "N/A") + "\n" +
+            "🔹 *Cantidad:* " + (p.cantidad() != null ? p.cantidad() : "N/A") + "\n" +
+            "🔹 *Donación ID:* " + (p.donacionID() != null ? p.donacionID() : "N/A");
+  }
   // =========================================================================
   // Módulo Incentivos (Insignias y Misiones)
   // =========================================================================

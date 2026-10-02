@@ -119,4 +119,29 @@ public class LogisticaClient {
             throw new RuntimeException("Error de comunicación al gestionar la donación en Logística", e);
         }
     }
+
+
+    public List<PaqueteDTO> obtenerPaquetes() {
+        String url = baseUrl + "/paquetes";
+        ResponseEntity<List<PaqueteDTO>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<PaqueteDTO>>() {}
+        );
+        return response.getBody();
+    }
+
+    public PaqueteDTO buscarPaquetePorId(String id) {
+        String url = baseUrl + "/paquetes/" + id;
+        ResponseEntity<PaqueteDTO> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                PaqueteDTO.class
+        );
+        return response.getBody();
+    }
+
+
 }

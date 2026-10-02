@@ -80,6 +80,18 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     mostrarSubmenuDonaciones(chatId);
                     break;
 
+                case "SUB_MENU_DONADORES":
+                    mostrarSubmenuDonadores(chatId);
+                    break;
+
+                case "SUB_MENU_ENTIDADES":
+                    mostrarSubmenuEntidades(chatId);
+                    break;
+
+                case "SUB_MENU_NECESIDADES":
+                    mostrarSubmenuNecesidades(chatId);
+                    break;
+
                 case "MENU_INICIAL":
                     enviarMenuInicial(chatId);
                     break;
@@ -212,6 +224,18 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/gestionar_donacion 1, 10, 1, 5`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_PAQUETES_TODOS":
+                    procesarComando(chatId, null, "/paquetes_todos");
+                    break;
+
+                case "ACT_PAQUETE_POR_ID":
+                    enviarTexto(chatId, "🔍 *Consultar Paquete por ID*\n\n" +
+                            "📋 *Campo requerido:* `PaqueteID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/paquete a1b2c3`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
                 // =============================================================
@@ -414,22 +438,188 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         row1.add(crearBoton("🏢 Crear Depósito", "ACT_CREAR_DEPOSITO"));
-        row1.add(crearBoton("🔍 Depósito ID", "ACT_DEPOSITO_POR_ID"));
+        row1.add(crearBoton("🔍 Depósito por ID", "ACT_DEPOSITO_POR_ID"));
 
         List<InlineKeyboardButton> row2 = new ArrayList<>();
         row2.add(crearBoton("📋 Ver Depósitos", "ACT_DEPOSITOS_TODOS"));
         row2.add(crearBoton("📊 Ver Asignaciones", "ACT_ASIGNACIONES_TODAS"));
 
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("📦 Gestionar Donación", "ACT_GESTIONAR_DONACION"));
+        row3.add(crearBoton("📦 Ver Paquetes", "ACT_PAQUETES_TODOS"));
+        row3.add(crearBoton("🔍 Paquete por ID", "ACT_PAQUETE_POR_ID"));
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+        row4.add(crearBoton("📦 Gestionar Donación", "ACT_GESTIONAR_DONACION"));
+
+        List<InlineKeyboardButton> row5 = new ArrayList<>();
+        row5.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
 
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
         rows.add(row4);
+        rows.add(row5);
+
+        markup.setKeyboard(rows);
+        message.setReplyMarkup(markup);
+
+        ejecutarMensaje(message);
+    }
+
+//    private void mostrarSubmenuDonadoresYEntidades(long chatId) {
+//        SendMessage message = new SendMessage();
+//        message.setChatId(String.valueOf(chatId));
+//        message.setText("👤 *Panel de Donadores, Entidades y Necesidades*\n¿Qué acción querés realizar?");
+//        message.setParseMode(ParseMode.MARKDOWN);
+//
+//        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+//        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+//
+//        // ENTIDADES
+//        List<InlineKeyboardButton> row1 = new ArrayList<>();
+//        row1.add(crearBoton("➕ Registrar Donador", "ACT_REGISTRAR"));
+//        row1.add(crearBoton("✏️ Editar Donador", "ACT_EDITAR_DONADOR"));
+//
+//
+//        List<InlineKeyboardButton> row2 = new ArrayList<>();
+//        row2.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
+//        row2.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
+//
+//
+//
+//        List<InlineKeyboardButton> row3 = new ArrayList<>();
+//        row3.add(crearBoton("➕ Crear Entidad", "ACT_CREAR_ENTIDAD"));
+//        row3.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
+//
+//        List<InlineKeyboardButton> row4 = new ArrayList<>();
+//        row4.add(crearBoton("🔍 Buscar Entidad por ID", "ACT_ENTIDAD_POR_ID"));
+//        row4.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
+//
+//        // NECESIDADES (¡Agregadas aquí!)
+//        List<InlineKeyboardButton> row5 = new ArrayList<>();
+//        row5.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
+//        row5.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
+//
+//
+//
+//        List<InlineKeyboardButton> row6 = new ArrayList<>();
+//        row6.add(crearBoton("🔍 Necesidad por ID", "ACT_NECESIDAD_POR_ID"));
+//        row6.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
+//
+//        // DONADORES
+//        List<InlineKeyboardButton> row7 = new ArrayList<>();
+//        row7.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+//
+//
+//
+//
+//        // VOLVER
+//        List<InlineKeyboardButton> row8 = new ArrayList<>();
+//        row8.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+//
+//        // Agregamos todas las filas a la estructura
+//        rows.add(row1);
+//        rows.add(row2);
+//        rows.add(row3);
+//        rows.add(row4);
+//        rows.add(row5);
+//        rows.add(row6);
+//        rows.add(row7);
+//        rows.add(row8);
+//
+//        markup.setKeyboard(rows);
+//        message.setReplyMarkup(markup);
+//
+//        ejecutarMensaje(message);
+//    }
+private void mostrarSubmenuDonadores(long chatId) {
+    SendMessage message = new SendMessage();
+    message.setChatId(String.valueOf(chatId));
+    message.setText("👤 *Panel de Donadores*\nSeleccioná la operación:");
+    message.setParseMode(ParseMode.MARKDOWN);
+
+    InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+    List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+    List<InlineKeyboardButton> row1 = new ArrayList<>();
+    row1.add(crearBoton("➕ Registrarse", "ACT_REGISTRAR"));
+    row1.add(crearBoton("✏️ Editar Donador", "ACT_EDITAR_DONADOR"));
+
+    List<InlineKeyboardButton> row2 = new ArrayList<>();
+    row2.add(crearBoton("🔍 Buscar por ID", "ACT_DONADOR_POR_ID"));
+    row2.add(crearBoton("📋 Ver Todos", "ACT_DONADORES_TODOS"));
+
+    // Estadísticas puestas en el panel del donador como pediste:
+    List<InlineKeyboardButton> row3 = new ArrayList<>();
+    row3.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+
+    List<InlineKeyboardButton> row4 = new ArrayList<>();
+    row4.add(crearBoton("⬅️️ Volver", "ROL_DONADORES_Y_ENTIDADES"));
+
+    rows.add(row1);
+    rows.add(row2);
+    rows.add(row3);
+    rows.add(row4);
+
+    markup.setKeyboard(rows);
+    message.setReplyMarkup(markup);
+
+    ejecutarMensaje(message);
+}
+
+    private void mostrarSubmenuEntidades(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("🏢 *Panel de Entidades Benéficas*\nSeleccioná la operación:");
+        message.setParseMode(ParseMode.MARKDOWN);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("➕ Crear Entidad", "ACT_CREAR_ENTIDAD"));
+        row1.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("🔍 Buscar por ID", "ACT_ENTIDAD_POR_ID"));
+        row2.add(crearBoton("📋 Ver Todas", "ACT_ENTIDADES_TODAS"));
+
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        row3.add(crearBoton("⬅️ Volver", "ROL_DONADORES_Y_ENTIDADES"));
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+
+        markup.setKeyboard(rows);
+        message.setReplyMarkup(markup);
+
+        ejecutarMensaje(message);
+    }
+
+    private void mostrarSubmenuNecesidades(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("📋 *Panel de Necesidades*\nSeleccioná la operación:");
+        message.setParseMode(ParseMode.MARKDOWN);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
+        row1.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(crearBoton("🔍 Buscar por ID", "ACT_NECESIDAD_POR_ID"));
+        row2.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
+
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        row3.add(crearBoton("⬅️ Volver", "ROL_DONADORES_Y_ENTIDADES"));
+
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -440,68 +630,32 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
     private void mostrarSubmenuDonadoresYEntidades(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("👤 *Panel de Donadores, Entidades y Necesidades*\n¿Qué acción querés realizar?");
+        message.setText("👤 *Panel de Gestión*\nSeleccioná el módulo que querés consultar o administrar:");
         message.setParseMode(ParseMode.MARKDOWN);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-        // ENTIDADES
+        // FILA 1: Donadores y Entidades
         List<InlineKeyboardButton> row1 = new ArrayList<>();
-        row1.add(crearBoton("➕ Registrar Donador", "ACT_REGISTRAR"));
-        row1.add(crearBoton("✏️ Editar Donador", "ACT_EDITAR_DONADOR"));
+        row1.add(crearBoton("👤 Donadores", "SUB_MENU_DONADORES"));
+        row1.add(crearBoton("🏢 Entidades", "SUB_MENU_ENTIDADES"));
 
-
+        // FILA 2: Necesidades y Volver
         List<InlineKeyboardButton> row2 = new ArrayList<>();
-        row2.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
-        row2.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
+        row2.add(crearBoton("📋 Necesidades", "SUB_MENU_NECESIDADES"));
+        row2.add(crearBoton("⬅️ Volver", "MENU_INICIAL"));
 
-
-
-        List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("➕ Crear Entidad", "ACT_CREAR_ENTIDAD"));
-        row3.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
-
-        List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("🔍 Buscar Entidad por ID", "ACT_ENTIDAD_POR_ID"));
-        row4.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
-
-        // NECESIDADES (¡Agregadas aquí!)
-        List<InlineKeyboardButton> row5 = new ArrayList<>();
-        row5.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
-        row5.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
-
-
-
-        List<InlineKeyboardButton> row6 = new ArrayList<>();
-        row6.add(crearBoton("🔍 Necesidad por ID", "ACT_NECESIDAD_POR_ID"));
-        row6.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
-
-        // DONADORES
-        List<InlineKeyboardButton> row7 = new ArrayList<>();
-        row7.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
-
-
-
-
-        // VOLVER
-        List<InlineKeyboardButton> row8 = new ArrayList<>();
-        row7.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
-
-        // Agregamos todas las filas a la estructura
         rows.add(row1);
         rows.add(row2);
-        rows.add(row3);
-        rows.add(row4);
-        rows.add(row5);
-        rows.add(row6);
-        rows.add(row7);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
 
         ejecutarMensaje(message);
     }
+
+
 
     private void mostrarSubmenuDonaciones(long chatId) {
 
@@ -861,6 +1015,19 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                         );
                     }
                     respuesta = this.fachada.gestionarDonacion(arg);
+                    break;
+
+
+                case "/paquetes_todos":
+                    respuesta = this.fachada.obtenerPaquetesFormateados();
+                    break;
+
+
+                case "/paquete":
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException("Falta el ID del paquete. Ejemplo: `/paquete 1`");
+                    }
+                    respuesta = this.fachada.buscarPaquetePorIdFormateado(arg.trim());
                     break;
 
                 // =============================================================
