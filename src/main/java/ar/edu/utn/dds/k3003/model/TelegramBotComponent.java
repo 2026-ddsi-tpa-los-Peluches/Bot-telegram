@@ -732,13 +732,18 @@ private void mostrarSubmenuDonadores(long chatId) {
         row4.add(crearBoton("🎯 Asignar Misión", "ACT_ASIGNAR_MISION"));
 
         List<InlineKeyboardButton> row5 = new ArrayList<>();
-        row5.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+        row5.add(crearBoton("📈 Ver Mision en Curso", "ACT_MISION_CURSO"));
+        row5.add(crearBoton("❌ Quitar Mision en Curso", "ACT_QUITAR_MISION"));
+
+        List<InlineKeyboardButton> row6 = new ArrayList<>();
+        row6.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
 
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
         rows.add(row4);
         rows.add(row5);
+        rows.add(row6);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
