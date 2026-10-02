@@ -100,6 +100,13 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "`/mis_estadisticas 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
+                case "ACT_EDITAR_DONADOR":
+                    enviarTexto(chatId, "✏️ *Editar Donador*\n\n" +
+                            "📋 *Campos requeridos:* `ID, Nombre, Apellido, Edad, Email, DNI, Domicilio`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/editar_donador 1, Juan, Perez, 30, juan@email.com, 12345678, Av. Medrano 951`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
 
                 case "ACT_DONADOR_POR_ID":
                     enviarTexto(chatId, "🔍 *Consultar Donador por ID*\n\n" +
@@ -441,33 +448,44 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
         // ENTIDADES
         List<InlineKeyboardButton> row1 = new ArrayList<>();
-        row1.add(crearBoton("🏢 Crear Entidad", "ACT_CREAR_ENTIDAD"));
-        row1.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
+        row1.add(crearBoton("➕ Registrar Donador", "ACT_REGISTRAR"));
+        row1.add(crearBoton("✏️ Editar Donador", "ACT_EDITAR_DONADOR"));
+
 
         List<InlineKeyboardButton> row2 = new ArrayList<>();
-        row2.add(crearBoton("🔍 Entidad por ID", "ACT_ENTIDAD_POR_ID"));
-        row2.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
+        row2.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
+        row2.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
 
-        // NECESIDADES (¡Agregadas aquí!)
+
+
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
-        row3.add(crearBoton("🔍 Necesidad por ID", "ACT_VER_NECESIDAD"));
+        row3.add(crearBoton("➕ Crear Entidad", "ACT_CREAR_ENTIDAD"));
+        row3.add(crearBoton("✏️ Editar Entidad", "ACT_EDITAR_ENTIDAD"));
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
-        row4.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
+        row4.add(crearBoton("🔍 Buscar Entidad por ID", "ACT_ENTIDAD_POR_ID"));
+        row4.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
 
-        // DONADORES
+        // NECESIDADES (¡Agregadas aquí!)
         List<InlineKeyboardButton> row5 = new ArrayList<>();
-        row5.add(crearBoton("📝 Registrarse", "ACT_REGISTRAR"));
-        row5.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+        row5.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
+        row5.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
+
+
 
         List<InlineKeyboardButton> row6 = new ArrayList<>();
-        row6.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
-        row6.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
+        row6.add(crearBoton("🔍 Necesidad por ID", "ACT_NECESIDAD_POR_ID"));
+        row6.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
+
+        // DONADORES
+        List<InlineKeyboardButton> row7 = new ArrayList<>();
+        row7.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+
+
+
 
         // VOLVER
-        List<InlineKeyboardButton> row7 = new ArrayList<>();
+        List<InlineKeyboardButton> row8 = new ArrayList<>();
         row7.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
 
         // Agregamos todas las filas a la estructura
@@ -660,6 +678,44 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                 case "/donadores_todos":
                     List<DonadorDTO> donadores = this.fachada.buscarTodosLosDonadores();
                     respuesta = formatearListaDonadores(donadores);
+                    break;
+
+                case "/editar_donador":
+                    String[] camposEditDon = arg.split(",");
+                    if (camposEditDon.length < 7) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/editar_donador ID, Nombre, Apellido, Edad, Email, DNI, Domicilio`"
+                        );
+                    }
+
+                    Integer idDonEdit = parsearId(camposEditDon[0].trim());
+                    String nomEdit = camposEditDon[1].trim();
+                    String apEdit = camposEditDon[2].trim();
+
+                    int edadEdit;
+                    try {
+                        edadEdit = Integer.parseInt(camposEditDon[3].trim());
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("La edad debe ser un número entero válido.");
+                    }
+
+                    String emailEdit = camposEditDon[4].trim();
+                    String dniEdit = camposEditDon[5].trim();
+                    String domEditDon = camposEditDon[6].trim();
+
+                    DonadorDTO dtoModificacion = new DonadorDTO(
+                            idDonEdit,
+                            nomEdit,
+                            apEdit,
+                            edadEdit,
+                            emailEdit,
+                            dniEdit,
+                            domEditDon,
+                            null,
+                            null
+                    );
+
+                    respuesta = this.fachada.editarDonador(idDonEdit, dtoModificacion);
                     break;
 
                 // =============================================================

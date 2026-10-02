@@ -751,6 +751,16 @@ public class Fachada {
             "📝 *Descripción:* " + d.descripcion();
   }
 
+  public String editarDonador(Integer id, DonadorDTO donadorDTO) {
+    DonadorDTO actualizado = this.donadoresYEntidadesClient.editarDonador(id, donadorDTO);
+    return "✅ *¡Donador actualizado con éxito!*\n\n" +
+            "🆔 *ID:* `" + actualizado.id() + "`\n" +
+            "👤 *Nombre:* " + actualizado.nombre() + " " + actualizado.apellido() + "\n" +
+            "📧 *Email:* " + actualizado.email() + "\n" +
+            "📄 *DNI:* " + actualizado.nroDocumento() + "\n" +
+            "🏠 *Domicilio:* " + actualizado.domicilio();
+  }
+
   private String formatearListaDonaciones(List<DonacionDTO> donaciones) {
     if (donaciones == null || donaciones.isEmpty()) {
       return "⚠️ *No hay donaciones registradas.*";

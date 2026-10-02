@@ -154,6 +154,19 @@ public class DonadoresYEntidadesClient {
             System.err.println("Error al editar entidad en el microservicio: " + e.getMessage());
             return null;
         }
+
+
+    }
+    public DonadorDTO editarDonador(Integer id, DonadorDTO donadorDTO) {
+        String url = baseUrl + "/donadores/" + id;
+        HttpEntity<DonadorDTO> requestEntity = new HttpEntity<>(donadorDTO);
+        ResponseEntity<DonadorDTO> response = restTemplate.exchange(
+                url,
+                HttpMethod.PUT,
+                requestEntity,
+                DonadorDTO.class
+        );
+        return response.getBody();
     }
 
 
