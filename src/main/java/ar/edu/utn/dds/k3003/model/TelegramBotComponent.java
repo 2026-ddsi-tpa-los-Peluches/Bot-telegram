@@ -3,8 +3,10 @@ package ar.edu.utn.dds.k3003.model;
 import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.TipoNecesidadMaterialEnum;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.CategoriaDonadorEnum;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.TipoMisionEnum;
 import ar.edu.utn.dds.k3003.catedra.dtos.logistica.DepositoDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -205,7 +207,9 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 
-                // --- INSTRUCCIONES ACCIONES INCENTIVOS ---
+                // =============================================================
+                // INSTRUCCIONES ACCIONES INCENTIVOS
+                // =============================================================
 
                 case "ACT_INSIGNIAS_TODAS":
                     procesarComando(chatId, null, "/insignias_todas");
@@ -244,6 +248,38 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                             "📋 *Campo requerido:* `DonadorID`\n\n" +
                             "💡 *Ejemplo para copiar y modificar:*\n" +
                             "`/quitar_mision 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
+                    break;
+
+                case "ACT_CREAR_INSIGNIA":
+                    enviarTexto(chatId, "🏅 *Crear Insignia*\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Descripción, Criterio`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_insignia Donador Estrella, Otorgada por superar 10 donaciones, 10_DONACIONES`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_INSIGNIA_POR_ID":
+                    enviarTexto(chatId, "🔍 *Consultar Insignia por ID*\n\n" +
+                            "📋 *Campo requerido:* `InsigniaID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/insignia 1`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
+                    break;
+
+                case "ACT_CREAR_MISION":
+                    enviarTexto(chatId, "🎯 *Crear Misión*\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Descripción, Requisito`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/crear_mision Misión Semanal, Completar 3 donaciones en la semana, 3`\n\n" +
+                            "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
+                    break;
+
+                case "ACT_MISION_POR_ID":
+                    enviarTexto(chatId, "🔍 *Consultar Misión por ID*\n\n" +
+                            "📋 *Campo requerido:* `MisionID`\n\n" +
+                            "💡 *Ejemplo para copiar y modificar:*\n" +
+                            "`/mision 1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá el ID y envialo)_");
                     break;
 
@@ -397,7 +433,7 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
     private void mostrarSubmenuDonadoresYEntidades(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("👤 *Panel de Donadores y Entidades*\n¿Qué acción querés realizar?");
+        message.setText("👤 *Panel de Donadores, Entidades y Necesidades*\n¿Qué acción querés realizar?");
         message.setParseMode(ParseMode.MARKDOWN);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -412,24 +448,36 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         row2.add(crearBoton("🔍 Entidad por ID", "ACT_ENTIDAD_POR_ID"));
         row2.add(crearBoton("📋 Ver todas las Entidades", "ACT_ENTIDADES_TODAS"));
 
-        // DONADORES
+        // NECESIDADES (¡Agregadas aquí!)
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("📝 Registrarse", "ACT_REGISTRAR"));
-        row3.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+        row3.add(crearBoton("➕ Crear Necesidad", "ACT_CREAR_NECESIDAD"));
+        row3.add(crearBoton("🔍 Necesidad por ID", "ACT_VER_NECESIDAD"));
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
-        row4.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
+        row4.add(crearBoton("✏️ Editar Necesidad", "ACT_EDITAR_NECESIDAD"));
+        row4.add(crearBoton("🗑️ Borrar Necesidad", "ACT_BORRAR_NECESIDAD"));
+
+        // DONADORES
+        List<InlineKeyboardButton> row5 = new ArrayList<>();
+        row5.add(crearBoton("📝 Registrarse", "ACT_REGISTRAR"));
+        row5.add(crearBoton("📊 Mis Estadísticas", "ACT_ESTADISTICAS"));
+
+        List<InlineKeyboardButton> row6 = new ArrayList<>();
+        row6.add(crearBoton("🔍 Buscar Donador por ID", "ACT_DONADOR_POR_ID"));
+        row6.add(crearBoton("📋 Ver Todos los Donadores", "ACT_DONADORES_TODOS"));
 
         // VOLVER
-        List<InlineKeyboardButton> row5 = new ArrayList<>();
-        row5.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+        List<InlineKeyboardButton> row7 = new ArrayList<>();
+        row7.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
 
+        // Agregamos todas las filas a la estructura
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
         rows.add(row4);
         rows.add(row5);
+        rows.add(row6);
+        rows.add(row7);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -496,24 +544,29 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
         List<InlineKeyboardButton> row1 = new ArrayList<>();
-        row1.add(crearBoton("📋 Ver Insignias", "ACT_INSIGNIAS_TODAS"));
-        row1.add(crearBoton("🎯 Ver Misiones", "ACT_MISIONES_TODAS"));
+        row1.add(crearBoton("➕ Crear Insignia", "ACT_CREAR_INSIGNIA"));
+        row1.add(crearBoton("🔍 Insignia por ID", "ACT_INSIGNIA_POR_ID"));
 
         List<InlineKeyboardButton> row2 = new ArrayList<>();
-        row2.add(crearBoton("🏅 Asignar Insignia", "ACT_ASIGNAR_INSIGNIA"));
-        row2.add(crearBoton("🎯 Asignar Misión", "ACT_ASIGNAR_MISION"));
+        row2.add(crearBoton("➕ Crear Misión", "ACT_CREAR_MISION"));
+        row2.add(crearBoton("🔍 Misión por ID", "ACT_MISION_POR_ID"));
 
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        row3.add(crearBoton("🔍 Misión en Curso", "ACT_MISION_CURSO"));
-        row3.add(crearBoton("❌ Cancelar Misión", "ACT_QUITAR_MISION"));
+        row3.add(crearBoton("📋 Ver Insignias", "ACT_INSIGNIAS_TODAS"));
+        row3.add(crearBoton("📋 Ver Misiones", "ACT_MISIONES_TODAS"));
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
-        row4.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
+        row4.add(crearBoton("🏅 Asignar Insignia", "ACT_ASIGNAR_INSIGNIA"));
+        row4.add(crearBoton("🎯 Asignar Misión", "ACT_ASIGNAR_MISION"));
+
+        List<InlineKeyboardButton> row5 = new ArrayList<>();
+        row5.add(crearBoton("⬅️ Volver al Menú Principal", "MENU_INICIAL"));
 
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
         rows.add(row4);
+        rows.add(row5);
 
         markup.setKeyboard(rows);
         message.setReplyMarkup(markup);
@@ -821,6 +874,85 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
                     this.fachada.quitarMisionDeDonador(arg);
                     respuesta = "✅ *Misión en curso cancelada correctamente para el donador ID " + arg + ".*";
                     break;
+
+                case "/crear_mision":
+                    String[] camposMision = arg.split(",");
+                    if (camposMision.length < 5) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/crear_mision Nombre, InsigniaID, CategoriaInicio, CategoriaFin, Tipo`\n\n" +
+                                        "Ejemplo:\n`/crear_mision Misión Bronce, 1, BRONCE, PLATA, ACUMULATIVA`"
+                        );
+                    }
+
+                    String nombreMision = camposMision[0].trim();
+                    String insigniaIDMision = camposMision[1].trim();
+
+                    CategoriaDonadorEnum catInicio;
+                    CategoriaDonadorEnum catFin;
+                    TipoMisionEnum tipoMision;
+
+                    try {
+                        catInicio = CategoriaDonadorEnum.valueOf(camposMision[2].trim().toUpperCase());
+                        catFin = CategoriaDonadorEnum.valueOf(camposMision[3].trim().toUpperCase());
+                        tipoMision = TipoMisionEnum.valueOf(camposMision[4].trim().toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Las categorías o el tipo de misión son inválidos.");
+                    }
+
+                    if (nombreMision.isEmpty()) {
+                        throw new IllegalArgumentException("El Nombre no puede estar vacío.");
+                    }
+
+                    MisionDTO nuevaMision = new MisionDTO(
+                            null,
+                            nombreMision,
+                            insigniaIDMision,
+                            catInicio,
+                            catFin,
+                            tipoMision
+                    );
+
+                    MisionDTO misionCreada = this.fachada.agregarMision(nuevaMision);
+
+                    respuesta = "✅ *¡Misión creada exitosamente!*\n\n" +
+                            "🆔 *ID Asignado:* `" + misionCreada.id() + "`\n" +
+                            "🎯 *Nombre:* " + misionCreada.nombre() + "\n" +
+                            "🏆 *Insignia ID:* " + misionCreada.insigniaID() + "\n" +
+                            "📈 *Transición:* " + misionCreada.categoriaInicio() + " ➡️ " + misionCreada.categoriaFin() + "\n" +
+                            "🔹 *Tipo:* " + misionCreada.tipo();
+                    break;
+
+                case "/mision":
+                    if (arg.isEmpty()) {
+                        throw new IllegalArgumentException("Falta el ID. Ejemplo: `/mision 1`");
+                    }
+
+                    MisionDTO misionBuscada = this.fachada.getMision(arg.trim());
+
+                    respuesta = (misionBuscada != null)
+                            ? "🎯 *Información de la Misión* 🎯\n\n" +
+                            "🆔 *ID:* `" + misionBuscada.id() + "`\n" +
+                            "📌 *Nombre:* " + misionBuscada.nombre() + "\n" +
+                            "🏆 *Insignia ID:* " + misionBuscada.insigniaID() + "\n" +
+                            "📈 *Categorías:* " + misionBuscada.categoriaInicio() + " ➡️ " + misionBuscada.categoriaFin() + "\n" +
+                            "🔹 *Tipo:* " + misionBuscada.tipo()
+                            : "❌ No se encontró ninguna misión con el ID *" + arg.trim() + "*";
+                    break;
+
+
+                case "/crear_insignia":
+                    String[] camposInsig = arg.split(",");
+                    if (camposInsig.length < 3) {
+                        throw new IllegalArgumentException(
+                                "Faltan datos. Formato esperado:\n`/crear_insignia Nombre, Descripción, Criterio`"
+                        );
+                    }
+                    InsigniaDTO nuevaInsig = new InsigniaDTO(null, camposInsig[0].trim(), camposInsig[1].trim());
+                    InsigniaDTO creadaInsig = this.fachada.agregarInsignia(nuevaInsig);
+                    respuesta = "✅ *Insignia creada con éxito!*\n🆔 ID: `" + creadaInsig.id() + "`\n📛 Nombre: " + creadaInsig.nombre();
+                    break;
+
+
 
                     // =============================================================
                     // COMANDOS DONACIONES
