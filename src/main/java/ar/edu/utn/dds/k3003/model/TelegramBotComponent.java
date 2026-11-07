@@ -341,9 +341,9 @@ public class TelegramBotComponent extends TelegramLongPollingBot {
 
                 case "DON_CREAR_PRODUCTO":
                     enviarTexto(chatId, "📦 *Crear Producto*\n\n" +
-                            "📋 *Campos requeridos:* `Nombre, Descripción, CategoriaID, IdentificadorID`\n\n" +
+                            "📋 *Campos requeridos:* `Nombre, Descripción, CategoriaID, IdentificadorID,SubCategoria`\n\n" +
                             "💡 *Ejemplo para copiar y modificar:*\n" +
-                            "`/crear_producto Leche, Leche entera descremada, 1, 1`\n\n" +
+                            "`/crear_producto Leche, Leche entera descremada, 1,1,1`\n\n" +
                             "_(Tocá el mensaje de arriba para copiarlo, cambiá los datos y envialo)_");
                     break;
 

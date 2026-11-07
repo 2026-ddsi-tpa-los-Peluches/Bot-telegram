@@ -592,14 +592,16 @@ public class Fachada {
           String nombre,
           String descripcion,
           String categoriaID,
-          String identificadorID) {
+          String identificadorID,
+          String subCategoriaID) {
 
     ProductoDTO dto = new ProductoDTO(
             null,
             nombre,
             descripcion,
             categoriaID,
-            identificadorID
+            identificadorID,
+            subCategoriaID
     );
 
     ProductoDTO creado = this.donacionesClient.agregarProducto(dto);
