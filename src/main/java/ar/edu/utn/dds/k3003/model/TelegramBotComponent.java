@@ -1291,10 +1291,10 @@ private void mostrarSubmenuDonadores(long chatId) {
                     String[] camposProducto =
                             arg.split(",");
 
-                    if (camposProducto.length < 4) {
+                    if (camposProducto.length < 5) {
                         throw new IllegalArgumentException(
                                 "Formato esperado:\\n" +
-                                        "`/crear_producto Nombre, Descripción, CategoriaID, IdentificadorID`"
+                                        "`/crear_producto Nombre, Descripción, CategoriaID, IdentificadorID,SubCategoriaId`"
                         );
                     }
 
@@ -1310,12 +1310,17 @@ private void mostrarSubmenuDonadores(long chatId) {
                     String identificadorProducto =
                             camposProducto[3].trim();
 
+
+                    String subCategoriaId =
+                            camposProducto[4].trim();
+
                     respuesta =
                             this.fachada.crearProducto(
                                     nombreProducto,
                                     descripcionProducto,
                                     categoriaProducto,
-                                    identificadorProducto
+                                    identificadorProducto,
+                                    subCategoriaId
                             );
 
                     break;
@@ -1363,7 +1368,8 @@ private void mostrarSubmenuDonadores(long chatId) {
                                     camposEditarProducto[1].trim(),
                                     camposEditarProducto[2].trim(),
                                     camposEditarProducto[3].trim(),
-                                    camposEditarProducto[4].trim()
+                                    camposEditarProducto[4].trim(),
+                                    camposEditarProducto[5].trim()
                             );
 
                     break;

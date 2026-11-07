@@ -628,14 +628,16 @@ public class Fachada {
           String nombre,
           String descripcion,
           String categoriaID,
-          String identificadorID) {
+          String identificadorID,
+          String subCategoriaId) {
 
     ProductoDTO dto = new ProductoDTO(
             id,
             nombre,
             descripcion,
             categoriaID,
-            identificadorID
+            identificadorID,
+            subCategoriaId
     );
 
     ProductoDTO actualizado = this.donacionesClient.actualizarProducto(id, dto);
