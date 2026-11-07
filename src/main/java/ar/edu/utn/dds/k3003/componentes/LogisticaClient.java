@@ -21,7 +21,7 @@ public class LogisticaClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String baseUrl;
 
-    public LogisticaClient(@Value("${url.logistica}") String baseUrl) {
+    public LogisticaClient(@Value("${url.apigateway}") String baseUrl) {
         this.baseUrl = baseUrl;
     }
 

@@ -15,7 +15,7 @@ public class TelegramClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String baseUrl;
 
-    public TelegramClient(@Value("${INCENTIVOS_SERVICE_URL:http://localhost:8081}") String baseUrl) {
+    public TelegramClient(@Value("${url.apigateway}") String baseUrl) {
         this.baseUrl = baseUrl;
     }
 

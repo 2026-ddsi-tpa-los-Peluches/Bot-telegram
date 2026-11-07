@@ -23,7 +23,7 @@ public class IncentivosClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String baseUrl;
 
-    public IncentivosClient(@Value("${url.incentivos}") String baseUrl) {
+    public IncentivosClient(@Value("${url.apigateway}") String baseUrl) {
         this.baseUrl = baseUrl;
     }
 

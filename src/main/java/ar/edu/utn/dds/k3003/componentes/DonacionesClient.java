@@ -25,7 +25,7 @@ public class DonacionesClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public DonacionesClient(
-            @Value("${url.donaciones}") String baseUrl) {
+            @Value("${url.apigateway}") String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
